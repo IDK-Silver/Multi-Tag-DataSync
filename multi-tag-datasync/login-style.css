@@ -1,0 +1,30 @@
+/* 設置表單輸入區域的對齊樣式 */
+.form-group {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    width: 100px; /* 設置label的寬度來保持對齊 */
+    text-align: right;
+    margin-right: 10px;
+}
+
+.form-group input {
+    width: 200px; /* 設置input的寬度 */
+    padding: 5px;
+}
+
+/* 控制表單中心對齊 */
+.form-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+input[type="submit"] {
+    margin: 10px 5px;
+}
