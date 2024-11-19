@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Tag-DataSync Main Page</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- 頁首 -->
+    <header>
+        <div class="header-content">
+            <span>Multi-Tag-DataSync</span>
+            <button id="uploadButton" onclick="handleUploadClick()">上傳檔案</button>
+            <input type="file" id="fileInput" style="display: none;" onchange="handleFileUpload(event)">
+        </div>
+    </header>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 左側樹狀結構 -->
+        <div class="sidebar">
+            <ul id="folderTree">
+                <!-- 樹狀結構將由 JavaScript 動態生成 -->
+            </ul>
+        </div>
+        <!-- 中間內容區 -->
+        <div class="content">
+            <div class="folder-header" id="folderHeader">選擇資料夾以檢視內容</div>
+            <div class="file-list" id="fileList">
+                <!-- 檔案項目將由 JavaScript 動態載入 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模擬檔案系統結構
+        const fileSystem = {
+            root: {
+                files: ['檔案 A', '檔案 B'],
+                subfolders: {
+                    新增: {
+                        files: [],
+                        subfolders: {}
+                    },
+                    users: {
+                        files: [],
+                        subfolders: {
+                            欄位: {
+                                files: ['檔案 X'],
+                                subfolders: {}
+                            },
+                            索引: {
+                                files: ['檔案 Y'],
+                                subfolders: {}
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        function createTree(parentElement, folder, folderPath = 'root') {
+            for (const [name, content] of Object.entries(folder.subfolders)) {
+                const treeItem = document.createElement('li');
+                treeItem.className = 'tree-item';
+
+                // 展開/摺疊按鈕
+                const toggle = document.createElement('div');
+                toggle.className = 'tree-toggle';
+                treeItem.appendChild(toggle);
+
+                // 資料夾圖標
+                const icon = document.createElement('img');
+                icon.src = "folder-icon.png"; // 假設有一個資料夾圖示圖片
+                icon.alt = "資料夾圖示";
+                icon.className = "folder-icon";
+                treeItem.appendChild(icon);
+
+                // 資料夾名稱
+                const folderName = document.createElement('span');
+                folderName.textContent = name;
+                treeItem.appendChild(folderName);
+
+                // 子樹容器
+                const childrenContainer = document.createElement('ul');
+                childrenContainer.className = 'tree-children';
+                treeItem.appendChild(childrenContainer);
+
+                // 點擊展開/摺疊
+                toggle.addEventListener('click', () => {
+                    toggle.classList.toggle('expanded');
+                    childrenContainer.classList.toggle('active');
+                });
+
+                // 點擊載入資料夾內容
+                folderName.addEventListener('click', () => loadFolder(`${folderPath}/${name}`));
+
+                parentElement.appendChild(treeItem);
+
+                // 遞迴生成子資料夾
+                createTree(childrenContainer, content, `${folderPath}/${name}`);
+            }
+        }
+
+        // 載入資料夾內容
+        function loadFolder(folderPath) {
+            const folderParts = folderPath.split('/');
+            let currentFolder = fileSystem.root;
+
+            for (const part of folderParts.slice(1)) {
+                if (currentFolder.subfolders && currentFolder.subfolders[part]) {
+                    currentFolder = currentFolder.subfolders[part];
+                } else {
+                    console.error('資料夾路徑錯誤:', folderPath);
+                    return;
+                }
+            }
+
+            const header = document.getElementById('folderHeader');
+            const fileList = document.getElementById('fileList');
+
+            header.textContent = `目前檢視的資料夾: ${folderPath.split('/').pop()}`;
+            fileList.innerHTML = '';
+
+            // 顯示檔案
+            if (currentFolder.files) {
+                currentFolder.files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <img src="file-icon.png" alt="檔案圖示">
+                        <div>${file}</div>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+            }
+
+            // 如果沒有檔案且沒有子資料夾，顯示提示
+            if (!currentFolder.files.length && Object.keys(currentFolder.subfolders).length === 0) {
+                fileList.innerHTML = '<p>此資料夾內無檔案。</p>';
+            }
+        }
+
+        // 處理上傳按鈕點擊
+        function handleUploadClick() {
+            document.getElementById('fileInput').click();
+        }
+
+        // 處理檔案上傳
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                alert(`檔案 "${file.name}" 已選擇上傳！`);
+                // 這裡可以加入上傳邏輯
+            }
+        }
+
+        // 初始化頁面
+        document.addEventListener('DOMContentLoaded', () => {
+            const folderTree = document.getElementById('folderTree');
+            createTree(folderTree, fileSystem.root); // 生成樹狀結構
+            loadFolder('root'); // 預設載入根目錄
+        });
+    </script>
+</body>
+
+</html>

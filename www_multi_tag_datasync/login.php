@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pass = $_POST['password'];
 
         // 檢查用戶名和密碼是否匹配
-        $sql = "SELECT * FROM users WHERE username = ?";
+        $sql = "SELECT * FROM users WHERE name = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $user);
         $stmt->execute();
@@ -38,16 +38,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (hash('sha256', $pass) === $row['password_hash']) {
                 // 登錄成功，設置 session
                 $_SESSION['logged_in'] = true;
-                $_SESSION['username'] = $row['username'];
+                $_SESSION['user_id'] = $row['user_id'];
+                $_SESSION['name'] = $row['name'];
 
                 // 跳轉到主要的頁面
                 header("Location: main.php");
                 exit;
             } else {
-                echo "<span style = 'color : red;'>密碼錯誤</span>";
+                echo "<span style='color: red;'>密碼錯誤</span>";
             }
         } else {
-            echo "<span style = 'color : red;'>用戶名不存在</span>";
+            echo "<span style='color: red;'>用戶名不存在</span>";
         }
 
         // 關閉連接
@@ -65,16 +66,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登錄</title>
+    <title>login</title>
 </head>
 <body>
     <center>
     <h2>登錄</h2>
     <form action="login.php" method="post">
         <label for="username">用戶名:</label>
-        <input type="text" id="username" name="username" ><br><br>
+        <input type="text" id="username" name="username"><br><br>
         <label for="password">密碼:</label>
-        <input type="password" id="password" name="password" ><br><br>
+        <input type="password" id="password" name="password"><br><br>
         <!-- 登錄按鈕 -->
         <input type="submit" name="login" value="確認">
         <!-- 註冊按鈕 -->

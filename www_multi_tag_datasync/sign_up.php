@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "密碼不一致，請重新輸入。";
     } else {
         // 檢查用戶名是否已存在
-        $sql = "SELECT * FROM users WHERE username = ?";
+        $sql = "SELECT * FROM users WHERE name = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $user);
         $stmt->execute();
@@ -50,8 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 將密碼加密處理
             $hashed_password = hash('sha256', $pass);
 
-            // 插入原始密碼和加密密碼
-            $insert_sql = "INSERT INTO users (username, password_hash) VALUES (?,?)";
+            // 插入新用戶記錄
+            $insert_sql = "INSERT INTO users (name, password_hash) VALUES (?, ?)";
             $insert_stmt = $conn->prepare($insert_sql);
             $insert_stmt->bind_param("ss", $user, $hashed_password);
 
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         alert('註冊成功！即將跳轉到登錄頁面...');
                         setTimeout(function() {
                             window.location.href = 'login.php';
-                        },5);
+                        }, 5);
                       </script>";
             } else {
                 echo "註冊過程中出現錯誤，請稍後再試。";
@@ -70,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 關閉連接
         $stmt->close();
+        $insert_stmt->close();
         $conn->close();
     }
 }
@@ -81,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>註冊</title>
+    <title>sign up</title>
 </head>
 
 <body>

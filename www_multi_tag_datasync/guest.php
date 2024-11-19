@@ -21,9 +21,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome</title>
+    <title>Welcome guest</title>
     <!-- 引入外部的 CSS 文件 -->
-    <link rel="stylesheet" href="guest-style.css">
+    <link rel="stylesheet" href="style\guest-style.css">
 </head>
 <body>
     <div class="container">
@@ -38,7 +38,7 @@
         </form> 
 
         <!-- 圖片部分，設置寬度和高度 -->
-        <img src="SAO.png" alt="Image">
+        <img src="img\SAO.png" alt="Image">
     </div>
 </body>
 </html>

@@ -1,0 +1,201 @@
+/* 全局樣式 */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* 頁首樣式 */
+header {
+    height: 50px;
+    background-color: #161616;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+ 
+.header-content {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 上傳按鈕樣式 */
+#Button {
+    background-color: #201663;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+#uploadButton:hover {
+    background-color: #201663;
+}
+
+/* 主容器 */
+.container {
+    display: flex;
+    height: calc(100vh - 50px);
+}
+
+/* 左側資料樹樣式 */
+.sidebar {
+    width: 250px;
+    background-color: #f4f4f4;
+    padding: 10px;
+    overflow-y: auto;
+    border-right: 1px solid #ddd;
+}
+
+#folderTree {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+#folderTree li {
+    margin: 10px 0;
+    cursor: pointer;
+    position: relative;
+}
+
+#folderTree li a {
+    color: #333;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+#folderTree li a:hover {
+    background-color: #ddd;
+}
+
+.folder-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
+.folder-expanded::before {
+    content: '\25BC';
+    position: absolute;
+    left: -20px;
+    top: 5px;
+}
+
+.folder-collapsed::before {
+    content: '\25B6';
+    position: absolute;
+    left: -20px;
+    top: 5px;
+}
+
+li ul {
+    display: none;
+    list-style-type: none;
+    padding-left: 15px;
+}
+
+li.expanded ul {
+    display: block;
+}
+
+li .folder-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+}
+
+/* 中間內容區 */
+.content {
+    flex: 1;
+    padding: 20px;
+    background-color: #fff;
+    overflow-y: auto;
+}
+
+.content .folder-header {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.content .file-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.content .file-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    transition: box-shadow 0.3s;
+}
+
+.content .file-item:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.content .file-item img {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
+}
+
+/* 樹狀結構樣式 */
+.folder-item {
+    position: relative;
+    list-style: none;
+    padding-left: 20px;
+    cursor: pointer;
+}
+
+.toggle-btn {
+    cursor: pointer;
+    margin-right: 5px;
+    color: #333;
+    font-weight: bold;
+}
+
+.tree-children {
+    padding-left: 20px; /* 增加縮排來顯示層次 */
+}
+
+.context-menu {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* 確保在前端顯示 */
+    padding: 5px;
+    position: absolute;
+    width: 150px;
+    display: flex;
+    flex-direction: column;
+}
+
+.context-menu div {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.context-menu div:hover {
+    background-color: #f0f0f0;
+}
+
+.file-thumbnail {
+    width: 100px;  /* 縮略圖的寬度 */
+    height: auto;  /* 自動調整高度，保持比例 */
+    margin-bottom: 10px;
+}
