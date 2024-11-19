@@ -298,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['file_uuid'])) {
         <!-- 中間內容區 -->
         <div class="content">
             <div class="folder-header" id="folderHeader"><button id="gobake"
-                    onclick="goBack()">&lt;&lt;</button>正在檢視資料夾：<?php echo htmlspecialchars($current_folder_path); ?>
+                    onclick="goBack()"><span class="material-icons md-36">arrow_back</span></button>正在檢視資料夾：<?php echo htmlspecialchars($current_folder_path); ?>
             </div>
             <div class="file-list" id="fileList">
                 <?php
@@ -310,8 +310,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['file_uuid'])) {
                 $files_result = $files_stmt->get_result();
                 while ($file = $files_result->fetch_assoc()) {
                     $is_folder = $file['d_id'] == 1;
-                    $file_link = $is_folder ? '?folder_uuid=' . $file['doc_uuid'] : '#';      
+                    $file_link = $is_folder ? '?folder_uuid=' . $file['doc_uuid'] : '#';
                     echo '<div class="file-item" oncontextmenu="handleContextMenu(event, \'' . $file['doc_uuid'] . '\')">
+                           <img></img>
                             <a href="' . $file_link . '">' . htmlspecialchars($file['filename']) . '</a>
                           </div>';
                 }

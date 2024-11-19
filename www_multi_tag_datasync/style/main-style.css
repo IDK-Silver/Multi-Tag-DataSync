@@ -16,7 +16,7 @@ header {
     font-size: 1.5em;
     font-weight: bold;
 }
- 
+
 .header-content {
     width: 100%;
     display: flex;
@@ -149,7 +149,7 @@ li .folder-icon {
 }
 
 .content .file-item img {
-    width: 50px;
+    width: 80px;
     height: 50px;
     margin-bottom: 10px;
 }
@@ -170,14 +170,16 @@ li .folder-icon {
 }
 
 .tree-children {
-    padding-left: 20px; /* 增加縮排來顯示層次 */
+    padding-left: 20px;
+    /* 增加縮排來顯示層次 */
 }
 
 .context-menu {
     background-color: #fff;
     border: 1px solid #ccc;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000; /* 確保在前端顯示 */
+    z-index: 1000;
+    /* 確保在前端顯示 */
     padding: 5px;
     position: absolute;
     width: 150px;
@@ -194,8 +196,8 @@ li .folder-icon {
     background-color: #f0f0f0;
 }
 
-.file-thumbnail {
-    width: 100px;  /* 縮略圖的寬度 */
-    height: auto;  /* 自動調整高度，保持比例 */
-    margin-bottom: 10px;
+
+.custom-icon {
+    font-size: 64px;
+    color: #f00;
 }
