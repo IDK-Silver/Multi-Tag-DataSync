@@ -10,7 +10,7 @@
 如果php server set好了後先到VSCODE中開啟guest.php並右鍵選擇PHP server:serve project理論上瀏覽器會跳出你的guest.php頁面，
 接下來建議先去註冊一個user，理論上引入sql是沒有data的，我測過上傳跟刪除的邏輯沒有問題，也就是資料庫也會連鎖更新每個table的tuple，
 因為部分外來鑑我使用casade delete來連鎖刪除，不同使用者的檔案也會區隔開，目前預覽好像只能作用在pdf上，以上有問題dc跟我說 :)
-要停止server的話右鍵按 PHP server:stop project，Apache跟MySql記得開
+要停止server的話右鍵按 PHP server:stop server，Apache跟MySql記得開
 
 ![{CFBF26DB-8568-4669-8504-C037701C1E0E}](https://github.com/user-attachments/assets/18ce866e-e492-4ec8-82c7-711dd43e8cd5)
 
