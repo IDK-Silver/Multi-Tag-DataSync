@@ -7,19 +7,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['login'])) {
         // 這裡是處理登錄的邏輯
 
-        // 資料庫連接
-        $servername = "localhost";
-        $username = "root";
-        $password = "";
-        $dbname = "www_multi_tag_datasync";
-
-        // 建立與MySQL的連接
-        $conn = new mysqli($servername, $username, $password, $dbname);
-
-        // 檢查連接是否成功
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
+        // Connecting to SQL
+        /*  @var mysqli  $conn */
+        require_once('./lib/php/db/connect_sql.php');
 
         // 取得表單中的用戶名和密碼
         $user = $_POST['username'];

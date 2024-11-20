@@ -1,19 +1,15 @@
 <?php
+
+// Connecting to SQL
+/*  @var mysqli  $conn */
+require_once('./lib/php/db/connect_sql.php');
+
+
 session_start();
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     // 如果未登錄，重定向到登錄頁面
     header("Location: login.php");
     exit;
-}
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "www_multi_tag_datasync";
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// 檢查連接是否成功
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
 }
 
 // 取得現在登陸用戶名稱

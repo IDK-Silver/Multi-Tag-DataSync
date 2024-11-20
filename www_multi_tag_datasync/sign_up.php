@@ -4,19 +4,11 @@ session_start();
 
 // 檢查是否提交表單
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 連接資料庫
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "www_multi_tag_datasync";
 
-    // 建立資料庫連接
-    $conn = new mysqli($servername, $username, $password, $dbname);
+    // Connecting to SQL
+    /*  @var mysqli  $conn */
+    require_once('./lib/php/db/connect_sql.php');
 
-    // 檢查連接是否成功
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
 
     // 從表單取得用戶名和密碼
     $user = trim($_POST['username']);  // 使用 trim() 去掉空格
