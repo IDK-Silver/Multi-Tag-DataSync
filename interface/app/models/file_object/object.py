@@ -48,9 +48,9 @@ class FileObject:
         self.hash = dictionary["doc_hash"]
 
     @staticmethod
-    def create_from_db(doc_id: Union[str, FileObjectUUID]):
+    def get_from_db(doc_id: Union[str, FileObjectUUID]):
         ret = FileObject()
-        db = DatabaseConnection().get_instance()
+        db = DatabaseConnection.get_instance()
 
         if isinstance(doc_id, FileObjectUUID):
             doc_id = doc_id.to_string()
@@ -70,7 +70,7 @@ class FileObject:
 
     @staticmethod
     def get_children(parent_doc_id: FileObjectUUID) -> list:
-        db = DatabaseConnection().get_instance()
+        db = DatabaseConnection.get_instance()
 
         children_info = db.execute_query(
             "SELECT * FROM doc WHERE parent_uuid = %s",
@@ -94,9 +94,27 @@ class FileObject:
 
         return ret
 
+    def is_valid(self):
+        if self.filename is None:
+            return False
+        elif self.uuid is None:
+            return False
+        elif self.parent_id is None:
+            return False
+        elif self.d_id is None:
+            return False
+        elif self.hash is None:
+            return False
+        elif self.timestamp is None:
+            return False
+
+        return True
+
+
+
 
 
 if __name__ == "__main__":
 
-    doc = FileObject.create_from_db('00524c02-a740-11ef-95a9-0242ac150002')
+    doc = FileObject.get_from_db('00524c02-a740-11ef-95a9-0242ac150002')
     print(doc)
