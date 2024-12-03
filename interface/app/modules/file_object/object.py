@@ -8,8 +8,8 @@ from typing import Union, List
 
 
 class FileObjectType(Enum):
-    file = 1
-    directory = 2
+    file = 0
+    directory = 1
 
 
 class FileObjectUUID:
@@ -48,7 +48,13 @@ class FileObject:
         self.hash = dictionary["doc_hash"]
 
     @staticmethod
-    def get_from_db(doc_id: Union[str, FileObjectUUID]):
+    def from_dict(dictionary):
+        ret: FileObject = FileObject()
+        ret.__modify_by_dict__(dictionary)
+        return ret
+
+    @staticmethod
+    def from_db(doc_id: Union[str, FileObjectUUID]):
         ret = FileObject()
         db = DatabaseConnection.get_instance()
 
@@ -115,6 +121,5 @@ class FileObject:
 
 
 if __name__ == "__main__":
-
-    doc = FileObject.get_from_db('00524c02-a740-11ef-95a9-0242ac150002')
+    doc = FileObject.from_db('00524c02-a740-11ef-95a9-0242ac150002')
     print(doc)
