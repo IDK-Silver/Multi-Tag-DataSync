@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime
-from enum import Enum
+from enum import IntEnum
 
 from app.core import db
 from app.core.db import DatabaseConnection
 from typing import Union, List
 
 
-class FileObjectType(Enum):
+class FileObjectType(IntEnum):
     file = 0
     directory = 1
 
@@ -21,11 +21,12 @@ class FileObjectUUID:
             return ''
         return self.uuid
 
+    def __eq__(self, other):
+        return self.to_string() == other.to_string()
+
     @staticmethod
     def generate():
         return FileObjectUUID(str(uuid.uuid4()))
-
-
 
 class FileObject:
     def __init__(self):
@@ -35,6 +36,9 @@ class FileObject:
         self.d_id: FileObjectType
         self.hash: str = ""
         self.timestamp: datetime
+
+    def is_root(self) -> bool:
+        return self.parent_id == self.uuid
 
     def __eq__(self, other):
         return self.uuid == other.uuid and self.hash == other.hash

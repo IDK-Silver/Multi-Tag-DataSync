@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+
 class DocUUIDSchema(BaseModel):
     uuid: str
 

@@ -96,10 +96,17 @@ async def update_file_info(doc_info: UpdateDocInfoSchema, current_user: User = D
 async def delete_file_info(doc_info: DocUUIDSchema, current_user: User = Depends(get_current_user)):
     db = DatabaseConnection.get_instance()
     remote_doc = FileObject.from_db(doc_info.uuid)
+
     if remote_doc is None:
-        raise HTTPException(
+        return HTTPException(
             status_code=404,
             detail="File notfound.",
+        )
+
+    if remote_doc.is_root():
+        return HTTPException(
+            status_code=404,
+            detail="Can't delete root file.",
         )
 
     db.execute_update(

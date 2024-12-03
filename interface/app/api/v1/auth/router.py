@@ -1,4 +1,5 @@
-from datetime import timedelta
+import uuid
+from datetime import timedelta, datetime
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from app.core.security import (
@@ -11,7 +12,7 @@ from app.core.security import (
 )
 from app.schemas.auth import Token, UserCreate
 from app.core.db import DatabaseConnection
-
+from app.modules.file_object.object import FileObjectType
 router = APIRouter()
 
 
@@ -49,12 +50,31 @@ async def register(user: UserCreate):
     if existing_user:
         raise HTTPException(status_code=400, detail="用戶名已存在")
 
+    root_uuid = uuid.uuid4()
+
     # 創建新用戶
     hashed_password = get_password_hash(user.password)
     db.execute_update(
-        "INSERT INTO users (name, password_hash) VALUES (%s, %s)",
-        (user.username, hashed_password)
+        "INSERT INTO users (name, password_hash, root_uuid) VALUES (%s, %s, %s)",
+        (user.username, hashed_password, root_uuid)
     )
+
+    # create root doc
+    user_id = get_user_from_db(user.username).user_id
+    query = """
+                INSERT INTO doc (filename, doc_uuid, parent_uuid, d_id, doc_hash, timestamp, uploaded_by)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+    params = (
+        "/",
+        root_uuid,
+        root_uuid,
+        int(FileObjectType.directory),
+        "",
+        datetime.now(),
+        user_id
+    )
+    db.execute_update(query, params)
 
     # 創建訪問令牌
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

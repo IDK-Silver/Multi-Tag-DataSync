@@ -44,6 +44,7 @@ def get_user_from_db(username: str) -> Optional[User]:
         username=ret["name"],
         hashed_password=ret["password_hash"],
         user_id=ret["user_id"],
+        root_uuid=ret["root_uuid"],
     )
     return user
 
