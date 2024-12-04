@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'pages/file_page.dart';
 import 'pages/search_page.dart';
 import 'pages/settings_page.dart';
+import 'pages/account.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,6 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = const [
     FilePage(),
     SearchPage(),
+    AccountPage(),
     SettingsPage(),
   ];
 
@@ -66,6 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 selectedIcon: Icon(Icons.search),
                 label: Text('搜尋'),
               ),
+              NavigationRailDestination(
+                  icon: Icon(Icons.account_box), label: Text('帳號')),
               NavigationRailDestination(
                 icon: Icon(Icons.settings_outlined),
                 selectedIcon: Icon(Icons.settings),

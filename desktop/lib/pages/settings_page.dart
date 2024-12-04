@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:logging/logging.dart';
+
+import 'package:mtds/modules/configs/basic.dart';
+
+final _logger = Logger('SettingsPage');
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -12,6 +19,31 @@ class _SettingsPageState extends State<SettingsPage> {
   String? selectedDirectory;
   final TextEditingController _apiUrlController = TextEditingController();
   final TextEditingController _tokenController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final isar = await Isar.open(
+      [BasicConfigSchema],
+      directory: dir.path,
+    );
+
+    final basicConfig = await isar.basicConfigs.get(0);
+
+    if (basicConfig != null) {
+      setState(() {
+        _apiUrlController.text = basicConfig.apiURL ?? '';
+        _tokenController.text = basicConfig.token ?? '';
+      });
+    }
+
+    isar.close();
+  }
 
   @override
   void dispose() {
@@ -68,7 +100,6 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildTextField(
               label: 'API Token',
               controller: _tokenController,
-              isPassword: true,
             ),
 
             // 資料夾選擇區域
@@ -104,8 +135,42 @@ class _SettingsPageState extends State<SettingsPage> {
             // 保存按鈕
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () {
-                // TODO: 實現保存邏輯
+              onPressed: () async {
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+                final dir = await getApplicationDocumentsDirectory();
+
+                _logger.info('Using directory: ${dir.absolute.path}');
+
+                final isar = await Isar.open(
+                  [BasicConfigSchema],
+                  directory: dir.path,
+                );
+
+                var existingConfig = await isar.basicConfigs.get(0);
+
+                if (existingConfig == null) {
+                  _logger.info('Creating new config');
+                  existingConfig = BasicConfig()
+                    ..id = 0
+                    ..apiURL = _apiUrlController.text
+                    ..token = _tokenController.text;
+                } else {
+                  existingConfig.apiURL = _apiUrlController.text;
+                  existingConfig.token = _tokenController.text;
+                }
+
+                await isar.writeTxn(() async {
+                  await isar.basicConfigs.put(existingConfig!);
+                });
+
+                isar.close();
+
+                if (mounted) {
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(content: Text('設定已保存')),
+                  );
+                }
               },
               child: const Text('保存設置'),
             ),
