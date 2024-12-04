@@ -10,7 +10,7 @@ from app.core.security import (
     get_user_from_db,
     get_password_hash
 )
-from app.schemas.auth import Token, UserCreate
+from app.schemas.auth import Token, UserCreate, User
 from app.core.db import DatabaseConnection
 from app.modules.file_object.object import FileObjectType
 router = APIRouter()
@@ -85,4 +85,14 @@ async def register(user: UserCreate):
 
     token = Token(access_token=access_token, token_type="bearer")
 
+    return token
+@router.post("/renew", response_model=Token)
+def renew_token(user: User = Depends(get_current_user)):
+    # 創建訪問令牌
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username},
+        expires_delta=access_token_expires
+    )
+    token = Token(access_token=access_token, token_type="bearer")
     return token
