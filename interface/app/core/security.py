@@ -44,6 +44,7 @@ def get_user_from_db(username: str) -> Optional[User]:
         username=ret["name"],
         hashed_password=ret["password_hash"],
         user_id=ret["user_id"],
+        root_uuid=ret["root_uuid"],
     )
     return user
 
@@ -64,4 +65,5 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     user = get_user_from_db(username)
     if user is None:
         raise credentials_exception
-    return username 
+    return get_user_from_db(user.username)
+

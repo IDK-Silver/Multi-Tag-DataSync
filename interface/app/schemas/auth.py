@@ -16,6 +16,8 @@ class User(BaseModel):
     user_id: int
     username: str
     hashed_password: str
+    root_uuid: str
+
 
 class UserCreate(BaseModel):
     username: str

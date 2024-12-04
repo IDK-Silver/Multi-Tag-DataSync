@@ -31,7 +31,6 @@
 # Executables
 *.exe
 *.out
-*.app
 cmake-build-debug/
 cmake-build-release/
 cmake-build-minsizerel
@@ -410,3 +409,6 @@ TSWLatexianTemp*
 *.hd
 *.pdf
 old/
+
+*.pcy
+__pycache__

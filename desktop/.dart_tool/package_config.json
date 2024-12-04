@@ -206,10 +206,5 @@
       "languageVersion": "3.5"
     }
   ],
-  "generated": "2024-11-29T12:51:54.018932Z",
-  "generator": "pub",
-  "generatorVersion": "3.5.4",
-  "flutterRoot": "file:///home/yuufeng/development/flutter",
-  "flutterVersion": "3.24.5",
-  "pubCache": "file:///home/yuufeng/.pub-cache"
-}
+
+  "generated": "2024-12-02T06:27:59.257112Z",
