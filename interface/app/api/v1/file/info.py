@@ -1,3 +1,4 @@
+import typing
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -120,3 +121,16 @@ async def delete_file_info(doc_info: DocUUIDSchema, current_user: User = Depends
     )
 
 
+@router.post("/children", response_model=typing.List[DocUUIDSchema])
+async def get_children(doc_info: DocUUIDSchema, current_user: User = Depends(get_current_user)):
+
+    db = DatabaseConnection.get_instance()
+
+    children_infos = db.execute_query(
+        "SELECT doc_uuid FROM doc WHERE parent_uuid = %s AND parent_uuid != doc.doc_uuid" ,
+        (doc_info.uuid,),
+    )
+
+    ret = [DocUUIDSchema(uuid=info['doc_uuid']) for info in children_infos]
+
+    return ret
