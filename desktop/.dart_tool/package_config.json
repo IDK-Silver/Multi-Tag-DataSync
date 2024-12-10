@@ -176,6 +176,12 @@
       "languageVersion": "3.3"
     },
     {
+      "name": "flutter_fancy_tree_view",
+      "rootUri": "file:///home/yuufeng/.pub-cache/hosted/pub.dev/flutter_fancy_tree_view-1.6.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "flutter_lints",
       "rootUri": "file:///home/yuufeng/.pub-cache/hosted/pub.dev/flutter_lints-4.0.0",
       "packageUri": "lib/",
@@ -446,6 +452,12 @@
       "languageVersion": "2.18"
     },
     {
+      "name": "sprintf",
+      "rootUri": "file:///home/yuufeng/.pub-cache/hosted/pub.dev/sprintf-7.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "stack_trace",
       "rootUri": "file:///home/yuufeng/.pub-cache/hosted/pub.dev/stack_trace-1.11.1",
       "packageUri": "lib/",
@@ -498,6 +510,12 @@
       "rootUri": "file:///home/yuufeng/.pub-cache/hosted/pub.dev/typed_data-1.4.0",
       "packageUri": "lib/",
       "languageVersion": "3.5"
+    },
+    {
+      "name": "uuid",
+      "rootUri": "file:///home/yuufeng/.pub-cache/hosted/pub.dev/uuid-4.5.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
     },
     {
       "name": "vector_math",
@@ -566,7 +584,7 @@
       "languageVersion": "3.5"
     }
   ],
-  "generated": "2024-12-04T15:52:45.721940Z",
+  "generated": "2024-12-10T16:07:37.768790Z",
   "generator": "pub",
   "generatorVersion": "3.5.4",
   "flutterRoot": "file:///home/yuufeng/development/flutter",

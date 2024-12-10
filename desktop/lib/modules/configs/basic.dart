@@ -11,4 +11,6 @@ class BasicConfig {
   String? token;
 
   String? realStoragePath;
+
+  bool? isLogin;
 }

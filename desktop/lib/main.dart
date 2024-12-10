@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/file_page.dart';
+import 'pages/file/file_page.dart';
 import 'pages/search_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/account.dart';
@@ -35,7 +35,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2;
 
   final List<Widget> _pages = const [
     FilePage(),
