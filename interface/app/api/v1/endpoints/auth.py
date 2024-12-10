@@ -39,7 +39,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 async def read_users_me(current_user: str = Depends(get_current_user)):
     return {"username": current_user}
 
-
 @router.post("/register", response_model=Token)
 async def register(user: UserCreate):
     db = DatabaseConnection.get_instance()

@@ -13,6 +13,7 @@ from app.core.security import (
 from app.schemas.auth import Token, UserCreate, User
 from app.core.db import DatabaseConnection
 from app.modules.file_object.object import FileObjectType
+
 router = APIRouter()
 
 
@@ -59,7 +60,7 @@ async def register(user: UserCreate):
         (user.username, hashed_password, root_uuid)
     )
 
-    # create root doc
+    # 創建 root doc
     user_id = get_user_from_db(user.username).user_id
     query = """
                 INSERT INTO doc (filename, doc_uuid, parent_uuid, d_id, doc_hash, timestamp, uploaded_by)
@@ -86,6 +87,7 @@ async def register(user: UserCreate):
     token = Token(access_token=access_token, token_type="bearer")
 
     return token
+
 @router.post("/renew", response_model=Token)
 def renew_token(user: User = Depends(get_current_user)):
     # 創建訪問令牌

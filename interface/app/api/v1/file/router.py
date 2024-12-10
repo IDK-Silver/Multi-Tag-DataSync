@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 from app.api.v1.file import bin, info, require_queue
 
-
 router = APIRouter()
 
 router.include_router(bin.router, prefix="/bin")
