@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:isar/isar.dart';
 import 'package:mtds/modules/user.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:mtds/modules/configs/basic.dart';
-import 'package:http/http.dart' as http;
 import 'package:mtds/modules/file_tree/widget.dart';
 import 'package:mtds/modules/file_tree/object.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:mtds/modules/api.dart';
 import 'package:uuid/uuid.dart';
+import 'package:mtds/modules/file_bin/controler.dart';
+import 'package:mtds/modules/file_bin/info.dart';
+import 'package:filesystem_picker/filesystem_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:file/file.dart';
 
 class FilePage extends StatefulWidget {
   const FilePage({super.key});
@@ -50,11 +55,16 @@ class _FilePageState extends State<FilePage> {
   TextEditingController filenameTextEditerControler = TextEditingController();
   TreeEntry<FileObjectNode>? currentTreeEntry;
   String timestampString = '';
+  String currentUuidString = '';
+  // MD5
+  String currentHashValue = '';
   CurrentFilePageWidgetState currentWidgetState = CurrentFilePageWidgetState();
-  int counter = 0;
-
+  TextEditingController uploadFilePathTextEditerControler =
+      TextEditingController();
   TextEditingController insertFileNameTextEditerControler =
       TextEditingController();
+
+  FileBinaryController fileBinaryController = FileBinaryController();
 
   @override
   void initState() {
@@ -119,6 +129,7 @@ class _FilePageState extends State<FilePage> {
       currentWidgetState.setInsertFileMode(true);
       currentWidgetState.setInsertFileMode(false);
       insertFileNameTextEditerControler.clear();
+      uploadFilePathTextEditerControler.clear();
     });
   }
 
@@ -156,6 +167,7 @@ class _FilePageState extends State<FilePage> {
       checkConnect();
       return;
     }
+
     if (currentTreeEntry == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('請選擇要新增的位置')),
@@ -172,11 +184,20 @@ class _FilePageState extends State<FilePage> {
     }
 
     if (node.type == FileObjectType.directory) {
+      String hashValue = '';
+      await getFileChecksum(uploadFilePathTextEditerControler.text)
+          .then((hash) {
+        if (hash != null) {
+          hashValue = hash;
+        }
+      });
+
       var newNode = FileObjectNode(
           filename: insertFileNameTextEditerControler.text,
           uuid: const Uuid().v4(),
           parentUuid: node.uuid,
-          children: <FileObjectNode>[]);
+          children: <FileObjectNode>[],
+          hash: hashValue);
 
       _getToken().then((token) {
         modifyFileInfo(token, newNode).then((succ) {
@@ -194,6 +215,11 @@ class _FilePageState extends State<FilePage> {
         insertFileNameTextEditerControler.clear();
         closeWidget();
       });
+      final binInfo = FileBinaryInfo()
+        ..uuid = newNode.uuid
+        ..path = uploadFilePathTextEditerControler.text
+        ..hash = hashValue;
+      fileBinaryController.put(binInfo);
     }
     treeController.rebuild();
     currentWidgetState.setInsertFolderMode(false);
@@ -385,6 +411,10 @@ class _FilePageState extends State<FilePage> {
                             if (entry.node.timestamp != null) {
                               timestampString = entry.node.timestamp.toString();
                             }
+
+                            currentUuidString = entry.node.uuid;
+
+                            currentHashValue = entry.node.hash;
                           });
                         },
                       );
@@ -430,16 +460,34 @@ class _FilePageState extends State<FilePage> {
                         ],
                       ),
                     ),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(40, 0, 40, 20),
+                      child: Row(
+                        children: [
+                          const Expanded(flex: 1, child: Text('UUID ')),
+                          Expanded(flex: 3, child: Text(currentUuidString)),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(40, 0, 40, 20),
+                      child: Row(
+                        children: [
+                          const Expanded(flex: 1, child: Text('Hash ')),
+                          Expanded(flex: 3, child: Text(currentHashValue)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
                 if (currentWidgetState.getInsertFileMode())
                   Positioned(
-                      top: size.height * 0.1,
-                      left: size.width * 0.1,
-                      right: size.width * 0.1,
+                      top: size.height * 0.01,
+                      left: size.width * 0.01,
+                      right: size.width * 0.01,
                       child: Container(
-                        width: size.width * 0.9,
-                        height: size.height * 0.9,
+                        width: size.width * 0.98,
+                        height: size.height * 0.98,
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.95),
@@ -450,12 +498,50 @@ class _FilePageState extends State<FilePage> {
                           children: [
                             Row(
                               children: [
-                                const Text('File Name : '),
-                                const SizedBox(width: 20),
+                                const Expanded(
+                                    flex: 2, child: Text('File Name')),
                                 Expanded(
+                                    flex: 6,
                                     child: TextField(
-                                  controller: insertFileNameTextEditerControler,
-                                ))
+                                      controller:
+                                          insertFileNameTextEditerControler,
+                                    )),
+                                const Expanded(
+                                    flex: 2,
+                                    child: SizedBox(
+                                      width: 0,
+                                      height: 0,
+                                    ))
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const Expanded(flex: 2, child: Text('檔案路徑')),
+                                Expanded(
+                                    flex: 6,
+                                    child: TextField(
+                                      controller:
+                                          uploadFilePathTextEditerControler,
+                                    )),
+                                Expanded(
+                                  flex: 2,
+                                  child: IconButton(
+                                    onPressed: () async {
+                                      FilePickerResult? chooseFilePath =
+                                          await FilePicker.platform.pickFiles();
+                                      if (chooseFilePath != null) {
+                                        var filePath = chooseFilePath.files[0];
+
+                                        uploadFilePathTextEditerControler.text =
+                                            filePath.path!;
+
+                                        insertFileNameTextEditerControler.text =
+                                            filePath.name;
+                                      }
+                                    },
+                                    icon: const Icon(Icons.file_open),
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(
@@ -499,12 +585,12 @@ class _FilePageState extends State<FilePage> {
                       )),
                 if (currentWidgetState.getInsertFolderMode())
                   Positioned(
-                      top: size.height * 0.1,
-                      left: size.width * 0.1,
-                      right: size.width * 0.1,
+                      top: size.height * 0.01,
+                      left: size.width * 0.01,
+                      right: size.width * 0.01,
                       child: Container(
-                        width: size.width * 0.9,
-                        height: size.height * 0.9,
+                        width: size.width * 0.98,
+                        height: size.height * 0.98,
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.95),
@@ -517,12 +603,16 @@ class _FilePageState extends State<FilePage> {
                           children: [
                             Row(
                               children: [
-                                const Text('Folder Name : '),
-                                const SizedBox(width: 20),
+                                const Expanded(
+                                  child: Text('Folder Name : '),
+                                  flex: 2,
+                                ),
                                 Expanded(
+                                    flex: 8,
                                     child: TextField(
-                                  controller: insertFileNameTextEditerControler,
-                                ))
+                                      controller:
+                                          insertFileNameTextEditerControler,
+                                    ))
                               ],
                             ),
                             const SizedBox(

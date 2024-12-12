@@ -22,13 +22,18 @@ const BasicConfigSchema = CollectionSchema(
       name: r'apiURL',
       type: IsarType.string,
     ),
-    r'realStoragePath': PropertySchema(
+    r'isLogin': PropertySchema(
       id: 1,
+      name: r'isLogin',
+      type: IsarType.bool,
+    ),
+    r'realStoragePath': PropertySchema(
+      id: 2,
       name: r'realStoragePath',
       type: IsarType.string,
     ),
     r'token': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'token',
       type: IsarType.string,
     )
@@ -81,8 +86,9 @@ void _basicConfigSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.apiURL);
-  writer.writeString(offsets[1], object.realStoragePath);
-  writer.writeString(offsets[2], object.token);
+  writer.writeBool(offsets[1], object.isLogin);
+  writer.writeString(offsets[2], object.realStoragePath);
+  writer.writeString(offsets[3], object.token);
 }
 
 BasicConfig _basicConfigDeserialize(
@@ -94,8 +100,9 @@ BasicConfig _basicConfigDeserialize(
   final object = BasicConfig();
   object.apiURL = reader.readStringOrNull(offsets[0]);
   object.id = id;
-  object.realStoragePath = reader.readStringOrNull(offsets[1]);
-  object.token = reader.readStringOrNull(offsets[2]);
+  object.isLogin = reader.readBoolOrNull(offsets[1]);
+  object.realStoragePath = reader.readStringOrNull(offsets[2]);
+  object.token = reader.readStringOrNull(offsets[3]);
   return object;
 }
 
@@ -109,8 +116,10 @@ P _basicConfigDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 2:
+      return (reader.readStringOrNull(offset)) as P;
+    case 3:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -410,6 +419,34 @@ extension BasicConfigQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<BasicConfig, BasicConfig, QAfterFilterCondition>
+      isLoginIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'isLogin',
+      ));
+    });
+  }
+
+  QueryBuilder<BasicConfig, BasicConfig, QAfterFilterCondition>
+      isLoginIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'isLogin',
+      ));
+    });
+  }
+
+  QueryBuilder<BasicConfig, BasicConfig, QAfterFilterCondition> isLoginEqualTo(
+      bool? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isLogin',
+        value: value,
       ));
     });
   }
@@ -738,6 +775,18 @@ extension BasicConfigQuerySortBy
     });
   }
 
+  QueryBuilder<BasicConfig, BasicConfig, QAfterSortBy> sortByIsLogin() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isLogin', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BasicConfig, BasicConfig, QAfterSortBy> sortByIsLoginDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isLogin', Sort.desc);
+    });
+  }
+
   QueryBuilder<BasicConfig, BasicConfig, QAfterSortBy> sortByRealStoragePath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'realStoragePath', Sort.asc);
@@ -790,6 +839,18 @@ extension BasicConfigQuerySortThenBy
     });
   }
 
+  QueryBuilder<BasicConfig, BasicConfig, QAfterSortBy> thenByIsLogin() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isLogin', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BasicConfig, BasicConfig, QAfterSortBy> thenByIsLoginDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isLogin', Sort.desc);
+    });
+  }
+
   QueryBuilder<BasicConfig, BasicConfig, QAfterSortBy> thenByRealStoragePath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'realStoragePath', Sort.asc);
@@ -825,6 +886,12 @@ extension BasicConfigQueryWhereDistinct
     });
   }
 
+  QueryBuilder<BasicConfig, BasicConfig, QDistinct> distinctByIsLogin() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isLogin');
+    });
+  }
+
   QueryBuilder<BasicConfig, BasicConfig, QDistinct> distinctByRealStoragePath(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -852,6 +919,12 @@ extension BasicConfigQueryProperty
   QueryBuilder<BasicConfig, String?, QQueryOperations> apiURLProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'apiURL');
+    });
+  }
+
+  QueryBuilder<BasicConfig, bool?, QQueryOperations> isLoginProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isLogin');
     });
   }
 

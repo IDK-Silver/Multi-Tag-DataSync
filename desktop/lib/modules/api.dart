@@ -55,7 +55,7 @@ Future<bool> modifyFileInfo(String token, FileObjectNode info) async {
         'uuid': info.uuid,
         'parent_id': info.parentUuid,
         'd_id': info.type.value,
-        'hash': '',
+        'hash': info.hash,
       }),
     );
 

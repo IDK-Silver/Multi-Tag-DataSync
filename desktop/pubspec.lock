@@ -153,8 +153,16 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
-  crypto:
+  cross_file:
     dependency: transitive
+    description:
+      name: cross_file
+      sha256: "7caf6a750a0c04effbb52a676dce9a4a592e10ad35c34d6d2d0e4811160d5670"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.4+2"
+  crypto:
+    dependency: "direct main"
     description:
       name: crypto
       sha256: "1e445881f28f22d6140f181e07737b22f1e099a5e1ff94b0af2f9e4a463f4855"
@@ -213,10 +221,18 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: "1bbf65dd997458a08b531042ec3794112a6c39c07c37ff22113d2e7e4f81d4e4"
+      sha256: "89500471922dd3a89ab0d6e13ab4a2268c25474bff4ca7c628f55c76e0ced1de"
       url: "https://pub.dev"
     source: hosted
-    version: "6.2.1"
+    version: "8.1.5"
+  filesystem_picker:
+    dependency: "direct main"
+    description:
+      name: filesystem_picker
+      sha256: cc2bfe7e5a4ce21afd5b1b03824c0e6e5386a981ed6cce7bda062b1af805cf62
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.1.0"
   fixnum:
     dependency: transitive
     description:

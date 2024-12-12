@@ -25,12 +25,14 @@ class FileObjectNode {
   final FileObjectType type;
   final List<FileObjectNode> children;
   final DateTime? timestamp;
+  final String hash;
   const FileObjectNode(
       {required this.filename,
       this.children = const <FileObjectNode>[],
       this.type = FileObjectType.file,
       this.uuid = '',
       this.parentUuid = '',
+      this.hash = '',
       DateTime? inTimestamp})
       : timestamp = inTimestamp;
 
@@ -84,6 +86,7 @@ class FileObjectNode {
                 ? FileObjectType.directory
                 : FileObjectType.file,
             children: <FileObjectNode>[],
+            hash: data['hash'],
             inTimestamp: DateTime.parse(data['timestamp']));
       } else {
         print('Failed to load file info: ${response.statusCode}');
