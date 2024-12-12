@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 enum FileObjectType {
@@ -23,13 +24,15 @@ class FileObjectNode {
   final String filename;
   final FileObjectType type;
   final List<FileObjectNode> children;
-
+  final DateTime? timestamp;
   const FileObjectNode(
       {required this.filename,
       this.children = const <FileObjectNode>[],
       this.type = FileObjectType.file,
       this.uuid = '',
-      this.parentUuid = ''});
+      this.parentUuid = '',
+      DateTime? inTimestamp})
+      : timestamp = inTimestamp;
 
   // static Future<FileObjectNode> fromDB(String token, String uuid) async {
   //   final url = Uri.parse('http://localhost:8000/api/v1/file/info/');
@@ -74,14 +77,14 @@ class FileObjectNode {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return FileObjectNode(
-          filename: data['filename'] ?? '',
-          uuid: data['uuid'] ?? '',
-          parentUuid: data['parent_id'] ?? '',
-          type: data['d_id'] == '1'
-              ? FileObjectType.directory
-              : FileObjectType.file,
-          children: <FileObjectNode>[],
-        );
+            filename: data['filename'] ?? '',
+            uuid: data['uuid'] ?? '',
+            parentUuid: data['parent_id'] ?? '',
+            type: data['d_id'] == '1'
+                ? FileObjectType.directory
+                : FileObjectType.file,
+            children: <FileObjectNode>[],
+            inTimestamp: DateTime.parse(data['timestamp']));
       } else {
         print('Failed to load file info: ${response.statusCode}');
         return null;

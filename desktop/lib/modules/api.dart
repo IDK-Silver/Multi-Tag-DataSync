@@ -71,3 +71,31 @@ Future<bool> modifyFileInfo(String token, FileObjectNode info) async {
     return false;
   }
 }
+
+Future<bool> deleteFileInfo(String token, FileObjectNode info) async {
+  final url = Uri.parse('http://localhost:8000/api/v1/file/info/modify');
+  try {
+    final response = await http.delete(
+      url,
+      headers: {
+        'accept': 'application/json',
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'uuid': info.uuid,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // 假设 200 状态码表示修改成功
+      return true;
+    } else {
+      print('Failed to delete file info: ${response.statusCode}');
+      return false;
+    }
+  } catch (e) {
+    print('Error in deleteFileInfo: $e');
+    return false;
+  }
+}

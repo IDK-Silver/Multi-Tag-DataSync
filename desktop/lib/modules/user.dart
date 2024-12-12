@@ -50,7 +50,7 @@ class UserInfo {
     rootUuid = null;
   }
 
-  Future<void> fromDB(String token) async {
+  static Future<UserInfo?> fromDB(String token) async {
     final url = Uri.parse('http://localhost:8000/api/v1/auth/me');
     try {
       final response = await http.get(
@@ -64,17 +64,45 @@ class UserInfo {
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
         final userJson = jsonResponse['username'];
-        setUserInfo(
-          userId: userJson['user_id'],
-          username: userJson['username'],
-          hashedPassword: userJson['hashed_password'],
-          rootUuid: userJson['root_uuid'],
-        );
+        return UserInfo()
+          ..userId = userJson['user_id']
+          ..username = userJson['username']
+          ..hashedPassword = userJson['hashed_password']
+          ..rootUuid = userJson['root_uuid'];
       } else {
-        return;
+        return null;
       }
     } catch (e) {
-      return;
+      return null;
     }
   }
+
+//   Future<void> fromDB(String token) async {
+//     final url = Uri.parse('http://localhost:8000/api/v1/auth/me');
+//     try {
+//       final response = await http.get(
+//         url,
+//         headers: {
+//           'accept': 'application/json',
+//           'Authorization': 'Bearer $token',
+//         },
+//       );
+
+//       if (response.statusCode == 200) {
+//         final jsonResponse = json.decode(response.body);
+//         final userJson = jsonResponse['username'];
+//         setUserInfo(
+//           userId: userJson['user_id'],
+//           username: userJson['username'],
+//           hashedPassword: userJson['hashed_password'],
+//           rootUuid: userJson['root_uuid'],
+//         );
+//       } else {
+//         return;
+//       }
+//     } catch (e) {
+//       return;
+//     }
+//   }
+// }
 }

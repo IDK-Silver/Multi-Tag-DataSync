@@ -168,6 +168,7 @@ class _AccountPageState extends State<AccountPage> {
 
   Future<String> _getToken() async {
     final dir = await getApplicationDocumentsDirectory();
+
     final isar = await Isar.open(
       [BasicConfigSchema],
       directory: dir.path,

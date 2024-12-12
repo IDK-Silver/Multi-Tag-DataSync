@@ -20,6 +20,8 @@ class FilePage extends StatefulWidget {
 class CurrentFilePageWidgetState {
   bool _insertFile = false;
   bool _insertFolder = false;
+  bool connect = false;
+  bool showConnectErrorMessage = false;
 
   void setInsertFileMode(bool mode) {
     _insertFile = mode;
@@ -47,7 +49,7 @@ class CurrentFilePageWidgetState {
 class _FilePageState extends State<FilePage> {
   TextEditingController filenameTextEditerControler = TextEditingController();
   TreeEntry<FileObjectNode>? currentTreeEntry;
-
+  String timestampString = '';
   CurrentFilePageWidgetState currentWidgetState = CurrentFilePageWidgetState();
   int counter = 0;
 
@@ -57,24 +59,67 @@ class _FilePageState extends State<FilePage> {
   @override
   void initState() {
     super.initState();
-
-    _getToken().then((token) {
-      UserInfo userInfo = UserInfo();
-      userInfo.fromDB(token);
-      FileObjectNode.fromDB(token, userInfo.getUserInfo()['root_uuid'])
-          .then((node) {
-        if (node != null) {
-          roots.add(node);
-          treeController.rebuild();
-          buildTree(roots[0]);
-        }
-      });
-    });
-
+    checkConnect();
     treeController = TreeController<FileObjectNode>(
       roots: roots,
       childrenProvider: (FileObjectNode node) => node.children,
     );
+  }
+
+  Future<void> checkConnect() async {
+    try {
+      _getToken().then((token) {
+        UserInfo userInfo = UserInfo();
+
+        if (token.isEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('未登入'),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          });
+          currentWidgetState.connect = false;
+          return;
+        }
+        // print(token);
+        // print(userInfo.getUserInfo());
+
+        UserInfo.fromDB(token).then((user) {
+          if (user != null && user.rootUuid != null) {
+            FileObjectNode.fromDB(token, user.rootUuid!).then((node) {
+              if (node != null) {
+                roots.add(node);
+                treeController.rebuild();
+                buildTree(roots[0]);
+              }
+            });
+            currentWidgetState.connect = true;
+          } else {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('未登入'),
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            });
+            currentWidgetState.connect = false;
+          }
+        });
+      });
+    } catch (e) {
+      return;
+    }
+  }
+
+  Future<void> closeWidget() async {
+    setState(() {
+      currentWidgetState.setInsertFileMode(true);
+      currentWidgetState.setInsertFileMode(false);
+      insertFileNameTextEditerControler.clear();
+    });
   }
 
   Future<String> _getToken() async {
@@ -87,24 +132,30 @@ class _FilePageState extends State<FilePage> {
     var existingConfig = await isar.basicConfigs.get(0);
 
     if (existingConfig == null) {
-      existingConfig = BasicConfig()
-        ..id = 0
-        ..apiURL = ''
-        ..token = '';
+      isar.close();
+      return '';
     }
 
     isar.close();
-
+    print('close isar');
     return existingConfig.token!;
   }
 
   Future<void> refreshTreeRoot() async {
+    if (!currentWidgetState.connect) {
+      checkConnect();
+      return;
+    }
     roots[0].children.clear();
     buildTree(roots[0]);
     treeController.rebuild();
   }
 
   Future<void> insertFiletNode() async {
+    if (!currentWidgetState.connect) {
+      checkConnect();
+      return;
+    }
     if (currentTreeEntry == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('請選擇要新增的位置')),
@@ -140,13 +191,19 @@ class _FilePageState extends State<FilePage> {
 
       setState(() {
         node.children.add(newNode);
+        insertFileNameTextEditerControler.clear();
+        closeWidget();
       });
     }
     treeController.rebuild();
-    currentWidgetState.setInsertFileMode(false);
+    currentWidgetState.setInsertFolderMode(false);
   }
 
   Future<void> insertDirectoryNode() async {
+    if (!currentWidgetState.connect) {
+      checkConnect();
+      return;
+    }
     if (currentTreeEntry == null) return;
 
     FileObjectNode node = currentTreeEntry!.node;
@@ -178,19 +235,18 @@ class _FilePageState extends State<FilePage> {
 
       setState(() {
         node.children.add(newNode);
+        insertFileNameTextEditerControler.clear();
+        closeWidget();
       });
-      // setState(() {
-      //   node.children.add(FileObjectNode(
-      //       filename: 'f' + counter.toString(),
-      //       type: FileObjectType.directory,
-      //       children: <FileObjectNode>[]));
-      // });
     }
-    // counter++;
     treeController.rebuild();
   }
 
   Future<void> deleteFileObjectNode() async {
+    if (!currentWidgetState.connect) {
+      checkConnect();
+      return;
+    }
     if (currentTreeEntry == null) return;
 
     FileObjectNode node = currentTreeEntry!.node;
@@ -201,8 +257,19 @@ class _FilePageState extends State<FilePage> {
 
     FileObjectNode parent_node = parentEntry.node;
 
-    parent_node.children.remove(node);
-    treeController.rebuild();
+    _getToken().then((token) {
+      deleteFileInfo(token, node).then((ret) {
+        if (ret) {
+          parent_node.children.remove(node);
+          treeController.rebuild();
+
+          setState(() {
+            filenameTextEditerControler.clear();
+            timestampString = '';
+          });
+        }
+      });
+    });
   }
 
   Future<void> buildTree(FileObjectNode? node) async {
@@ -256,11 +323,21 @@ class _FilePageState extends State<FilePage> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          onPressed: refreshTreeRoot,
+                          onPressed: () {
+                            if (!currentWidgetState.connect) {
+                              checkConnect();
+                              return;
+                            }
+                            refreshTreeRoot();
+                          },
                           child: const Icon(Icons.autorenew),
                         ),
                         TextButton(
                           onPressed: () {
+                            if (!currentWidgetState.connect) {
+                              checkConnect();
+                              return;
+                            }
                             setState(() {
                               currentWidgetState.setInsertFileMode(true);
                             });
@@ -270,13 +347,23 @@ class _FilePageState extends State<FilePage> {
                         ),
                         TextButton(
                             onPressed: () {
+                              if (!currentWidgetState.connect) {
+                                checkConnect();
+                                return;
+                              }
                               setState(() {
                                 currentWidgetState.setInsertFolderMode(true);
                               });
                             },
                             child: const Icon(Icons.create_new_folder)),
                         TextButton(
-                            onPressed: deleteFileObjectNode,
+                            onPressed: () {
+                              if (!currentWidgetState.connect) {
+                                checkConnect();
+                                return;
+                              }
+                              deleteFileObjectNode();
+                            },
                             child: const Icon(Icons.delete))
                       ],
                     ),
@@ -295,6 +382,9 @@ class _FilePageState extends State<FilePage> {
                           setState(() {
                             filenameTextEditerControler.text =
                                 entry.node.filename;
+                            if (entry.node.timestamp != null) {
+                              timestampString = entry.node.timestamp.toString();
+                            }
                           });
                         },
                       );
@@ -327,7 +417,16 @@ class _FilePageState extends State<FilePage> {
                                     border: OutlineInputBorder(),
                                     filled: true,
                                     fillColor: Colors.white,
-                                  )))
+                                  ))),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(40, 0, 40, 20),
+                      child: Row(
+                        children: [
+                          const Expanded(flex: 1, child: Text('Timestamp ')),
+                          Expanded(flex: 3, child: Text(timestampString)),
                         ],
                       ),
                     ),
@@ -351,7 +450,7 @@ class _FilePageState extends State<FilePage> {
                           children: [
                             Row(
                               children: [
-                                const Text('Filename'),
+                                const Text('File Name : '),
                                 const SizedBox(width: 20),
                                 Expanded(
                                     child: TextField(
@@ -374,6 +473,23 @@ class _FilePageState extends State<FilePage> {
                                 ),
                                 child: const Text(
                                   '新增',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 40,
+                              child: ElevatedButton(
+                                onPressed: closeWidget,
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: const Text(
+                                  '取消',
                                   style: TextStyle(fontSize: 18),
                                 ),
                               ),
@@ -401,7 +517,7 @@ class _FilePageState extends State<FilePage> {
                           children: [
                             Row(
                               children: [
-                                const Text('Filename'),
+                                const Text('Folder Name : '),
                                 const SizedBox(width: 20),
                                 Expanded(
                                     child: TextField(
@@ -424,6 +540,23 @@ class _FilePageState extends State<FilePage> {
                                 ),
                                 child: const Text(
                                   '新增',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 40,
+                              child: ElevatedButton(
+                                onPressed: closeWidget,
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: const Text(
+                                  '取消',
                                   style: TextStyle(fontSize: 18),
                                 ),
                               ),
