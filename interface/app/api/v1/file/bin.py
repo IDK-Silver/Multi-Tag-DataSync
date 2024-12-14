@@ -28,5 +28,6 @@ async def check_file(uuid: str):
             raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
     else:
         # 檔案不存在，加入待處理佇列
-        file_object_queue.append(file)
+        if file not in file_object_queue:
+            file_object_queue.append(file)
         raise HTTPException(status_code=404, detail="File not found and added to require queue")
