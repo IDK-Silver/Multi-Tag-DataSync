@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from app.core.security import get_current_user
 from app.schemas.auth import User
-from app.schemas.file.info import DocUUIDSchema, DocInfoSchema, UpdateDocInfoSchema, TagSchema
+from app.schemas.file.info import DocUUIDSchema, DocInfoSchema, UpdateDocInfoSchema
 from app.modules.file_object.object import FileObject
 from app.core.db import DatabaseConnection
 
@@ -215,3 +215,19 @@ async def filter_files_by_tags(tags: List[str], current_user: User = Depends(get
         status_code=200,
         detail="Filter files Successfully.",
     )
+
+
+
+@router.post("/children", response_model=typing.List[DocUUIDSchema])
+async def get_children(doc_info: DocUUIDSchema, current_user: User = Depends(get_current_user)):
+
+    db = DatabaseConnection.get_instance()
+
+    children_infos = db.execute_query(
+        "SELECT doc_uuid FROM doc WHERE parent_uuid = %s AND parent_uuid != doc.doc_uuid" ,
+        (doc_info.uuid,),
+    )
+
+    ret = [DocUUIDSchema(uuid=info['doc_uuid']) for info in children_infos]
+
+    return ret
