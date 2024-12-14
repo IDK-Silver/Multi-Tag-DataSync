@@ -130,7 +130,8 @@ class FileObject:
             self.uuid,
             self.parent_id,
             self.d_id is not None,
-            self.hash,
+            # Do not valid that
+            # self.hash,
             self.timestamp
         ]):
             return False

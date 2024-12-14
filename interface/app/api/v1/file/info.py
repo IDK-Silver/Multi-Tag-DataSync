@@ -6,7 +6,7 @@ from app.schemas.auth import User
 from app.schemas.file.info import DocUUIDSchema, DocInfoSchema, UpdateDocInfoSchema
 from app.modules.file_object.object import FileObject
 from app.core.db import DatabaseConnection
-
+import typing
 router = APIRouter()
 
 @router.post("/", response_model=DocInfoSchema)
