@@ -89,7 +89,8 @@ class FileObjectNode {
             hash: data['hash'],
             inTimestamp: DateTime.parse(data['timestamp']));
       } else {
-        print('Failed to load file info: ${response.statusCode}');
+        print(
+            'Failed to load file info: ${response.statusCode}, ${response.body}');
         return null;
       }
     } catch (e) {

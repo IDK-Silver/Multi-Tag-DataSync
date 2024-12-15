@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:mtds/modules/configs/controler.dart';
 import 'package:mtds/modules/configs/basic.dart';
 import 'package:mtds/modules/user.dart';
 
@@ -28,6 +28,7 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   bool isLogin = true;
+  BasicConfigController basicConfigController = BasicConfigController();
 
   final TextEditingController _usernameTextEditer = TextEditingController();
   final TextEditingController _passwordTextEditer = TextEditingController();
@@ -142,39 +143,32 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<void> _saveToken(String accessToken) async {
-    final dir = await getApplicationDocumentsDirectory();
-    final isar = await Isar.open(
-      [BasicConfigSchema],
-      directory: dir.path,
-    );
-
-    var existingConfig = await isar.basicConfigs.get(0);
-
-    if (existingConfig == null) {
-      existingConfig = BasicConfig()
-        ..id = 0
-        ..apiURL = ''
-        ..token = accessToken;
-    } else {
-      existingConfig.token = accessToken;
-    }
-
-    await isar.writeTxn(() async {
-      await isar.basicConfigs.put(existingConfig!);
+    basicConfigController.read().then((existingConfig) {
+      if (existingConfig == null) {
+        existingConfig = BasicConfig();
+        existingConfig.token = accessToken;
+      } else {
+        existingConfig.token = accessToken;
+      }
+      print(existingConfig.token);
+      basicConfigController.put(existingConfig);
     });
-
-    isar.close();
   }
 
   Future<String> _getToken() async {
-    final dir = await getApplicationDocumentsDirectory();
+    BasicConfig? existingConfig;
 
-    final isar = await Isar.open(
-      [BasicConfigSchema],
-      directory: dir.path,
-    );
-
-    var existingConfig = await isar.basicConfigs.get(0);
+    try {
+      existingConfig = await basicConfigController.read();
+      if (existingConfig != null) {
+        print("get token' Token : ${existingConfig.token}");
+        print('token not null');
+      } else {
+        print('token is null');
+      }
+    } catch (e) {
+      print('Error reading config: $e');
+    }
 
     if (existingConfig == null) {
       existingConfig = BasicConfig()
@@ -183,9 +177,7 @@ class _AccountPageState extends State<AccountPage> {
         ..token = '';
     }
 
-    isar.close();
-
-    return existingConfig.token!;
+    return existingConfig.token ?? '';
   }
 
   @override

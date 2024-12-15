@@ -43,7 +43,21 @@ const FileBinaryInfoSchema = CollectionSchema(
   deserialize: _fileBinaryInfoDeserialize,
   deserializeProp: _fileBinaryInfoDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'uuid': IndexSchema(
+      id: 2134397340427724972,
+      name: r'uuid',
+      unique: true,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'uuid',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _fileBinaryInfoGetId,
@@ -139,6 +153,61 @@ void _fileBinaryInfoAttach(
   object.id = id;
 }
 
+extension FileBinaryInfoByIndex on IsarCollection<FileBinaryInfo> {
+  Future<FileBinaryInfo?> getByUuid(String? uuid) {
+    return getByIndex(r'uuid', [uuid]);
+  }
+
+  FileBinaryInfo? getByUuidSync(String? uuid) {
+    return getByIndexSync(r'uuid', [uuid]);
+  }
+
+  Future<bool> deleteByUuid(String? uuid) {
+    return deleteByIndex(r'uuid', [uuid]);
+  }
+
+  bool deleteByUuidSync(String? uuid) {
+    return deleteByIndexSync(r'uuid', [uuid]);
+  }
+
+  Future<List<FileBinaryInfo?>> getAllByUuid(List<String?> uuidValues) {
+    final values = uuidValues.map((e) => [e]).toList();
+    return getAllByIndex(r'uuid', values);
+  }
+
+  List<FileBinaryInfo?> getAllByUuidSync(List<String?> uuidValues) {
+    final values = uuidValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'uuid', values);
+  }
+
+  Future<int> deleteAllByUuid(List<String?> uuidValues) {
+    final values = uuidValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'uuid', values);
+  }
+
+  int deleteAllByUuidSync(List<String?> uuidValues) {
+    final values = uuidValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'uuid', values);
+  }
+
+  Future<Id> putByUuid(FileBinaryInfo object) {
+    return putByIndex(r'uuid', object);
+  }
+
+  Id putByUuidSync(FileBinaryInfo object, {bool saveLinks = true}) {
+    return putByIndexSync(r'uuid', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByUuid(List<FileBinaryInfo> objects) {
+    return putAllByIndex(r'uuid', objects);
+  }
+
+  List<Id> putAllByUuidSync(List<FileBinaryInfo> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'uuid', objects, saveLinks: saveLinks);
+  }
+}
+
 extension FileBinaryInfoQueryWhereSort
     on QueryBuilder<FileBinaryInfo, FileBinaryInfo, QWhere> {
   QueryBuilder<FileBinaryInfo, FileBinaryInfo, QAfterWhere> anyId() {
@@ -216,6 +285,72 @@ extension FileBinaryInfoQueryWhere
         upper: upperId,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<FileBinaryInfo, FileBinaryInfo, QAfterWhereClause> uuidIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'uuid',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<FileBinaryInfo, FileBinaryInfo, QAfterWhereClause>
+      uuidIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'uuid',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<FileBinaryInfo, FileBinaryInfo, QAfterWhereClause> uuidEqualTo(
+      String? uuid) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'uuid',
+        value: [uuid],
+      ));
+    });
+  }
+
+  QueryBuilder<FileBinaryInfo, FileBinaryInfo, QAfterWhereClause>
+      uuidNotEqualTo(String? uuid) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [],
+              upper: [uuid],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [uuid],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [uuid],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'uuid',
+              lower: [],
+              upper: [uuid],
+              includeUpper: false,
+            ));
+      }
     });
   }
 }

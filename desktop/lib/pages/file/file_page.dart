@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:isar/isar.dart';
 import 'package:mtds/modules/user.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,9 +10,8 @@ import 'package:mtds/modules/api.dart';
 import 'package:uuid/uuid.dart';
 import 'package:mtds/modules/file_bin/controler.dart';
 import 'package:mtds/modules/file_bin/info.dart';
-import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:file/file.dart';
+import 'package:mtds/modules/configs/controler.dart';
 
 class FilePage extends StatefulWidget {
   const FilePage({super.key});
@@ -56,7 +54,6 @@ class _FilePageState extends State<FilePage> {
   TreeEntry<FileObjectNode>? currentTreeEntry;
   String timestampString = '';
   String currentUuidString = '';
-  // MD5
   String currentHashValue = '';
   CurrentFilePageWidgetState currentWidgetState = CurrentFilePageWidgetState();
   TextEditingController uploadFilePathTextEditerControler =
@@ -64,7 +61,10 @@ class _FilePageState extends State<FilePage> {
   TextEditingController insertFileNameTextEditerControler =
       TextEditingController();
 
+  bool currentFileInLocal = false;
+
   FileBinaryController fileBinaryController = FileBinaryController();
+  BasicConfigController basicConfigController = BasicConfigController();
 
   @override
   void initState() {
@@ -78,10 +78,33 @@ class _FilePageState extends State<FilePage> {
 
   Future<void> checkConnect() async {
     try {
-      _getToken().then((token) {
-        UserInfo userInfo = UserInfo();
+      final token = await _getToken();
 
-        if (token.isEmpty) {
+      if (token.isEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('未登入'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        });
+        currentWidgetState.connect = false;
+
+        return;
+      }
+
+      UserInfo.fromDB(token).then((user) {
+        if (user != null && user.rootUuid != null) {
+          FileObjectNode.fromDB(token, user.rootUuid!).then((node) {
+            if (node != null) {
+              roots.add(node);
+              treeController.rebuild();
+              buildTree(roots[0]);
+            }
+          });
+          currentWidgetState.connect = true;
+        } else {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -91,33 +114,7 @@ class _FilePageState extends State<FilePage> {
             );
           });
           currentWidgetState.connect = false;
-          return;
         }
-        // print(token);
-        // print(userInfo.getUserInfo());
-
-        UserInfo.fromDB(token).then((user) {
-          if (user != null && user.rootUuid != null) {
-            FileObjectNode.fromDB(token, user.rootUuid!).then((node) {
-              if (node != null) {
-                roots.add(node);
-                treeController.rebuild();
-                buildTree(roots[0]);
-              }
-            });
-            currentWidgetState.connect = true;
-          } else {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('未登入'),
-                  duration: Duration(seconds: 3),
-                ),
-              );
-            });
-            currentWidgetState.connect = false;
-          }
-        });
       });
     } catch (e) {
       return;
@@ -134,22 +131,28 @@ class _FilePageState extends State<FilePage> {
   }
 
   Future<String> _getToken() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final isar = await Isar.open(
-      [BasicConfigSchema],
-      directory: dir.path,
-    );
+    BasicConfig? existingConfig;
 
-    var existingConfig = await isar.basicConfigs.get(0);
-
-    if (existingConfig == null) {
-      isar.close();
-      return '';
+    try {
+      existingConfig = await basicConfigController.read();
+      if (existingConfig != null) {
+        print("get token' Token : ${existingConfig.token}");
+        print('token not null');
+      } else {
+        print('token is null');
+      }
+    } catch (e) {
+      print('Error reading config: $e');
     }
 
-    isar.close();
-    print('close isar');
-    return existingConfig.token!;
+    if (existingConfig == null) {
+      existingConfig = BasicConfig()
+        ..id = 0
+        ..apiURL = ''
+        ..token = '';
+    }
+
+    return existingConfig.token ?? '';
   }
 
   Future<void> refreshTreeRoot() async {
@@ -210,16 +213,17 @@ class _FilePageState extends State<FilePage> {
         });
       });
 
-      setState(() {
-        node.children.add(newNode);
-        insertFileNameTextEditerControler.clear();
-        closeWidget();
-      });
       final binInfo = FileBinaryInfo()
         ..uuid = newNode.uuid
         ..path = uploadFilePathTextEditerControler.text
         ..hash = hashValue;
       fileBinaryController.put(binInfo);
+
+      setState(() {
+        node.children.add(newNode);
+        insertFileNameTextEditerControler.clear();
+        closeWidget();
+      });
     }
     treeController.rebuild();
     currentWidgetState.setInsertFolderMode(false);
@@ -415,6 +419,18 @@ class _FilePageState extends State<FilePage> {
                             currentUuidString = entry.node.uuid;
 
                             currentHashValue = entry.node.hash;
+
+                            fileBinaryController
+                                .read(currentUuidString)
+                                .then((binInfo) {
+                              if (binInfo != null &&
+                                  binInfo.path != null &&
+                                  binInfo.path!.isNotEmpty) {
+                                currentFileInLocal = true;
+                              } else {
+                                currentFileInLocal = false;
+                              }
+                            });
                           });
                         },
                       );
@@ -475,6 +491,20 @@ class _FilePageState extends State<FilePage> {
                         children: [
                           const Expanded(flex: 1, child: Text('Hash ')),
                           Expanded(flex: 3, child: Text(currentHashValue)),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(40, 0, 40, 20),
+                      child: Row(
+                        children: [
+                          const Expanded(flex: 1, child: Text('In Local')),
+                          Expanded(
+                              flex: 1,
+                              child: Checkbox(
+                                  value: currentFileInLocal,
+                                  onChanged: (value) {})),
+                          Expanded(flex: 6, child: Text(currentHashValue)),
                         ],
                       ),
                     ),
