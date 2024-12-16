@@ -37,13 +37,15 @@ class FileObjectUUID:
 
 class FileObject:
     """表示一個檔案或目錄的對象"""
-    def __init__(self):
+    def __init__(self, uuid:FileObjectUUID =FileObjectUUID()):
         self.filename: str = ""  # 檔案名稱
-        self.uuid: FileObjectUUID = FileObjectUUID()  # 檔案的唯一 ID
+        self.uuid: FileObjectUUID = uuid
+        if isinstance(self.uuid, str):
+            self.uuid = FileObjectUUID(uuid=uuid)
         self.parent_id: FileObjectUUID = FileObjectUUID()  # 父目錄的 UUID
-        self.d_id: FileObjectType  # 檔案類型 (file 或 directory)
+        self.d_id: FileObjectType = FileObjectType.file  # 檔案類型 (file 或 directory)
         self.hash: str = ""  # 檔案的 hash 值
-        self.timestamp: datetime  # 檔案的創建時間
+        self.timestamp: datetime = datetime.now()  # 檔案的創建時間
 
     def is_root(self) -> bool:
         """檢查是否為根目錄"""
@@ -59,7 +61,7 @@ class FileObject:
         self.uuid = FileObjectUUID(dictionary["doc_uuid"])
         self.parent_id = FileObjectUUID(dictionary["parent_uuid"])
         self.d_id = FileObjectType(dictionary["d_id"])
-        self.timestamp = dictionary["timestamp"]
+        self.timestamp: datetime = dictionary["timestamp"]
         self.hash = dictionary["doc_hash"]
 
     @staticmethod
