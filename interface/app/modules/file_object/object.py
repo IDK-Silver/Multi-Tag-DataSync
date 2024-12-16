@@ -27,7 +27,10 @@ class FileObjectUUID:
 
     def __eq__(self, other):
         """判斷兩個 UUID 是否相等"""
-        return self.to_string() == other.to_string()
+        if isinstance(other, FileObjectUUID):
+            return self.to_string() == other.to_string()
+        else:
+            return self.to_string() == other
 
     @staticmethod
     def generate():
