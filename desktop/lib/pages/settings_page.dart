@@ -90,10 +90,10 @@ class _SettingsPageState extends State<SettingsPage> {
               label: 'API URL',
               controller: _apiUrlController,
             ),
-            _buildTextField(
-              label: 'API Token',
-              controller: _tokenController,
-            ),
+            // _buildTextField(
+            //   label: 'API Token',
+            //   controller: _tokenController,
+            // ),
 
             // 資料夾選擇區域
             const SizedBox(height: 20),
@@ -141,7 +141,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ..token = _tokenController.text;
                 } else {
                   existingConfig.apiURL = _apiUrlController.text;
-                  existingConfig.token = _tokenController.text;
+                  // existingConfig.token = _tokenController.text;
                 }
 
                 basicConfigController.put(existingConfig);

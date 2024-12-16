@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:mtds/modules/user.dart';
@@ -62,9 +64,13 @@ class _FilePageState extends State<FilePage> {
       TextEditingController();
 
   bool currentFileInLocal = false;
+  String currentFileLocalPath = '';
 
   FileBinaryController fileBinaryController = FileBinaryController();
   BasicConfigController basicConfigController = BasicConfigController();
+
+  late Timer _timer;
+  bool _isExecuting = false;
 
   @override
   void initState() {
@@ -74,6 +80,78 @@ class _FilePageState extends State<FilePage> {
       roots: roots,
       childrenProvider: (FileObjectNode node) => node.children,
     );
+    _startPeriodicExecution();
+  }
+
+  void _startPeriodicExecution() {
+    // 每5秒檢查一次
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (!_isExecuting) {
+        _executeCheckFileRequiredQueue();
+      } else {
+        print('Previous execution is still running. Skipping this cycle.');
+      }
+    });
+  }
+
+  Future<void> _executeCheckFileRequiredQueue() async {
+    _isExecuting = true;
+    try {
+      await checkFileRequiredQueue();
+    } finally {
+      _isExecuting = false;
+    }
+  }
+
+  Future<void> checkFileRequiredQueue() async {}
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  Future<void> downloadFileFromAnother() async {
+    String token = await _getToken();
+    if (token.isEmpty) return;
+
+    final binaryData = await getBinaryFile(currentUuidString, token);
+
+    if (binaryData == null) {
+      print('bin is null');
+      return;
+    }
+
+    // Get the directory to save the file
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/${filenameTextEditerControler.text}';
+
+    // Write the bytes to the file
+    final file = File(filePath);
+    await file.writeAsBytes(binaryData);
+
+    final binInfo = FileBinaryInfo()
+      ..uuid = currentUuidString
+      ..path = filePath
+      ..hash = await getFileChecksum(filePath);
+    fileBinaryController.put(binInfo);
+
+    setState(() {
+      fileBinaryController.put(binInfo);
+      currentFileInLocal = true;
+      currentFileLocalPath = filePath;
+    });
+
+    print('finish download');
+  }
+
+  Future<void> removeLocalFileInfo() async {
+    fileBinaryController.delete(currentUuidString);
+
+    setState(() {
+      currentFileLocalPath = '';
+      currentFileInLocal = false;
+    });
   }
 
   Future<void> checkConnect() async {
@@ -326,13 +404,6 @@ class _FilePageState extends State<FilePage> {
 
   List<FileObjectNode> roots = <FileObjectNode>[];
 
-  @override
-  void dispose() {
-    // Remember to dispose your tree controller to release resources.
-    treeController.dispose();
-    super.dispose();
-  }
-
   late final TreeController<FileObjectNode> treeController;
 
   @override
@@ -427,8 +498,10 @@ class _FilePageState extends State<FilePage> {
                                   binInfo.path != null &&
                                   binInfo.path!.isNotEmpty) {
                                 currentFileInLocal = true;
+                                currentFileLocalPath = binInfo.path!;
                               } else {
                                 currentFileInLocal = false;
+                                currentFileLocalPath = "";
                               }
                             });
                           });
@@ -457,6 +530,7 @@ class _FilePageState extends State<FilePage> {
                           Expanded(
                               flex: 3,
                               child: TextField(
+                                  enabled: false,
                                   controller: filenameTextEditerControler,
                                   decoration: const InputDecoration(
                                     labelText: '',
@@ -472,7 +546,8 @@ class _FilePageState extends State<FilePage> {
                       child: Row(
                         children: [
                           const Expanded(flex: 1, child: Text('Timestamp ')),
-                          Expanded(flex: 3, child: Text(timestampString)),
+                          Expanded(
+                              flex: 3, child: SelectableText(timestampString)),
                         ],
                       ),
                     ),
@@ -481,7 +556,9 @@ class _FilePageState extends State<FilePage> {
                       child: Row(
                         children: [
                           const Expanded(flex: 1, child: Text('UUID ')),
-                          Expanded(flex: 3, child: Text(currentUuidString)),
+                          Expanded(
+                              flex: 3,
+                              child: SelectableText(currentUuidString)),
                         ],
                       ),
                     ),
@@ -490,7 +567,8 @@ class _FilePageState extends State<FilePage> {
                       child: Row(
                         children: [
                           const Expanded(flex: 1, child: Text('Hash ')),
-                          Expanded(flex: 3, child: Text(currentHashValue)),
+                          Expanded(
+                              flex: 3, child: SelectableText(currentHashValue)),
                         ],
                       ),
                     ),
@@ -504,10 +582,43 @@ class _FilePageState extends State<FilePage> {
                               child: Checkbox(
                                   value: currentFileInLocal,
                                   onChanged: (value) {})),
-                          Expanded(flex: 6, child: Text(currentHashValue)),
+                          if (currentFileInLocal)
+                            Expanded(
+                                flex: 5,
+                                child: SelectableText(currentFileLocalPath)),
+                          if (currentFileInLocal)
+                            Expanded(
+                                flex: 1,
+                                child: IconButton(
+                                    onPressed: removeLocalFileInfo,
+                                    icon: const Icon(Icons.delete))),
+                          if (!currentFileInLocal)
+                            Expanded(
+                                flex: 1,
+                                child: IconButton(
+                                    onPressed: downloadFileFromAnother,
+                                    icon: const Icon(Icons.download))),
+                          if (!currentFileInLocal)
+                            const Expanded(
+                                flex: 5,
+                                child: SizedBox(
+                                  width: 10,
+                                )),
                         ],
                       ),
                     ),
+                    // if (currentFileInLocal)
+                    //   Container(
+                    //     padding: const EdgeInsets.fromLTRB(40, 0, 40, 20),
+                    //     child: Row(
+                    //       children: [
+                    //         const Expanded(
+                    //             flex: 1, child: Text('Local File Path : ')),
+                    //         Expanded(
+                    //             flex: 3, child: Text(currentFileLocalPath)),
+                    //       ],
+                    //     ),
+                    //   ),
                   ],
                 ),
                 if (currentWidgetState.getInsertFileMode())

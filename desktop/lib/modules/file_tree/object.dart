@@ -98,4 +98,6 @@ class FileObjectNode {
       return null;
     }
   }
+
+  // static FileObjectNode fromDict(Map<String, dynamic> dic) {}
 }
