@@ -85,7 +85,7 @@ class _FilePageState extends State<FilePage> {
 
   void _startPeriodicExecution() {
     // 每5秒檢查一次
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (!_isExecuting) {
         _executeCheckFileRequiredQueue();
       } else {
@@ -103,7 +103,31 @@ class _FilePageState extends State<FilePage> {
     }
   }
 
-  Future<void> checkFileRequiredQueue() async {}
+  Future<void> checkFileRequiredQueue() async {
+    // return;
+    final token = await _getToken();
+    if (token.isEmpty) {
+      print('checkFileRequiredQueue : token is empty');
+      return;
+    }
+
+    final queue = await fetchFileRequireQueue(token);
+
+    if (queue == null) {
+      print('queue is null');
+      return;
+    }
+
+    var requiredUuidList = <String>[];
+
+    for (var node in queue) {
+      requiredUuidList.add(node.uuid);
+    }
+
+    for (final uuid in requiredUuidList) {
+      final localUuid = fileBinaryController.read(uuid);
+    }
+  }
 
   @override
   void dispose() {
@@ -183,6 +207,7 @@ class _FilePageState extends State<FilePage> {
           });
           currentWidgetState.connect = true;
         } else {
+          print("file_page : checkConnect : fileobject is null");
           WidgetsBinding.instance.addPostFrameCallback((_) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -215,9 +240,8 @@ class _FilePageState extends State<FilePage> {
       existingConfig = await basicConfigController.read();
       if (existingConfig != null) {
         print("get token' Token : ${existingConfig.token}");
-        print('token not null');
       } else {
-        print('token is null');
+        print('file page : _getToken() : token is null');
       }
     } catch (e) {
       print('Error reading config: $e');

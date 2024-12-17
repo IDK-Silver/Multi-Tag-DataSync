@@ -1,5 +1,5 @@
 import 'dart:ffi';
-
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -9,6 +9,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:mtds/modules/configs/controler.dart';
 import 'package:mtds/modules/configs/basic.dart';
 import 'package:mtds/modules/user.dart';
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -25,7 +28,15 @@ class _AccountPageState extends State<AccountPage> {
     _tryLogin();
     // Timer.periodic(Duration(seconds: 10), (timer) {
     // });
+    (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+        (HttpClient client) {
+      client.badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+      return client;
+    };
   }
+
+  final dio = Dio();
 
   bool isLogin = true;
   BasicConfigController basicConfigController = BasicConfigController();
@@ -51,21 +62,30 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<UserInfo?> _getUserInfo(String token) async {
-    final url = Uri.parse('http://localhost:8000/api/v1/auth/me');
+    final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/auth/me');
     UserInfo info;
 
     try {
-      final response = await http.get(
-        url,
-        headers: {
-          'accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
+      // final response = await http.post(
+      //   url,
+      //   headers: {
+      //     'accept': 'application/json',
+      //     'Authorization': 'Bearer $token',
+      //   },
+      // );
+
+      final response = await dio.get(url.toString(),
+          options: Options(
+            headers: {
+              'accept': 'application/json',
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            followRedirects: true,
+          ));
 
       if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        final userJson = jsonResponse['username'];
+        final userJson = response.data['username'];
         info = UserInfo();
         info.setUserInfo(
           userId: userJson['user_id'],
@@ -75,33 +95,35 @@ class _AccountPageState extends State<AccountPage> {
         );
         return info;
       } else {
-        // throw Exception('Failed to load user info');
+        print('failded to get user info');
+        print(response.data);
         return null;
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('無法連接到伺服器，請確認伺服器是否已啟動')),
       );
+      print(e);
       isLogin = false;
     }
   }
 
   Future<void> _handleLogin() async {
     try {
-      final response = await http.post(
-        Uri.parse('http://localhost:8000/api/v1/auth/login'),
-        headers: {
+      final response = await dio.post(
+        'https://api_mtds.yuufeng.com/api/v1/auth/login',
+        options: Options(headers: {
           'accept': 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: {
+        }, followRedirects: true),
+        data: FormData.fromMap({
           'grant_type': 'password',
           'username': _usernameTextEditer.text,
           'password': _passwordTextEditer.text,
           'scope': '',
           'client_id': 'string',
           'client_secret': 'string'
-        },
+        }),
       );
 
       if (!mounted) return;
@@ -111,7 +133,7 @@ class _AccountPageState extends State<AccountPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('登入成功')),
         );
-        final responseData = jsonDecode(response.body);
+        final responseData = response.data;
         final accessToken = responseData['access_token'];
         await _saveToken(accessToken);
         setState(() {
@@ -127,9 +149,15 @@ class _AccountPageState extends State<AccountPage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('無法連接到伺服器，請確認伺服器是否已啟動')),
-      );
+      if (e is DioError && e.type == DioErrorType.connectionTimeout) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('無法連接到伺服器，請確認伺服器是否已啟動')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('發生錯誤: ${e.toString()}')),
+        );
+      }
       isLogin = false;
     }
   }

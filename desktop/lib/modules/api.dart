@@ -1,33 +1,38 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:mtds/modules/file_tree/object.dart';
-import 'package:mtds/modules/configs/controler.dart';
-import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'dart:async';
+import 'package:mtds/modules/user.dart';
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
+import 'package:dio/io.dart';
 
 Future<List<String>?> getFileInfoChildren(String token, String uuid) async {
-  const String url = 'http://localhost:8000/api/v1/file/info/children';
+  var _apiDio = Dio();
+  (_apiDio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    return client;
+  };
+  const String url = 'https://api_mtds.yuufeng.com/api/v1/file/info/children';
   try {
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
+    final response = await _apiDio.post(
+      Uri.parse(url).toString(),
+      options: Options(headers: {
         'accept': 'application/json',
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
+      }),
+      data: jsonEncode({
         'uuid': uuid,
       }),
     );
 
     if (response.statusCode == 200) {
       print('200 ok');
-      print(response.body);
+      // print(response.);
       // Assuming the API returns a JSON array of strings
-      List<dynamic> jsonResponse = jsonDecode(response.body);
+      List<dynamic> jsonResponse = response.data;
       List<String> ret = <String>[];
 
       for (dynamic value in jsonResponse) {
@@ -36,27 +41,37 @@ Future<List<String>?> getFileInfoChildren(String token, String uuid) async {
 
       return ret;
     } else {
+      print('API : faild to get childern');
       return null;
       // throw Exception(
       //     'Failed to load file info children: ${response.statusCode}');
     }
   } catch (e) {
+    print('API : faild to get childern');
+
     return null;
     // throw Exception('Error occurred while fetching file info children: $e');
   }
 }
 
 Future<bool> modifyFileInfo(String token, FileObjectNode info) async {
-  final url = Uri.parse('http://localhost:8000/api/v1/file/info/modify');
+  var _apiDio = Dio();
+  (_apiDio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    return client;
+  };
+  final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/info/modify');
   try {
-    final response = await http.post(
-      url,
-      headers: {
+    final response = await _apiDio.post(
+      url.toString(),
+      options: Options(headers: {
         'accept': 'application/json',
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
+      }),
+      data: jsonEncode({
         'filename': info.filename,
         'uuid': info.uuid,
         'parent_id': info.parentUuid,
@@ -79,22 +94,28 @@ Future<bool> modifyFileInfo(String token, FileObjectNode info) async {
 }
 
 Future<bool> deleteFileInfo(String token, FileObjectNode info) async {
-  final url = Uri.parse('http://localhost:8000/api/v1/file/info/modify');
+  var _apiDio = Dio();
+  (_apiDio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    return client;
+  };
+  final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/info/modify');
   try {
-    final response = await http.delete(
-      url,
-      headers: {
+    final response = await _apiDio.delete(
+      url.toString(),
+      options: Options(headers: {
         'accept': 'application/json',
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
+      }),
+      data: jsonEncode({
         'uuid': info.uuid,
       }),
     );
 
     if (response.statusCode == 200) {
-      // 假设 200 状态码表示修改成功
       return true;
     } else {
       print('Failed to delete file info: ${response.statusCode}');
@@ -116,42 +137,34 @@ List<int> _hexToBytes(String hex) {
 }
 
 Future<List<int>?> getBinaryFile(String uuid, String token) async {
+  var _apiDio = Dio();
+  (_apiDio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    return client;
+  };
   final url =
-      Uri.parse('http://localhost:8000/api/v1/file/require_queue/$uuid');
+      Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/require_queue/$uuid');
 
   try {
-    // Send GET request with Authorization header
-    final response = await http.get(
-      url,
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
+    final response = await _apiDio.get(url.toString(),
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ));
     if (response.statusCode == 200) {
       // Parse the JSON response
-      final Map<String, dynamic> responseData = json.decode(response.body);
+      final Map<String, dynamic> responseData =
+          json.decode(response.data.toString());
 
       if (responseData['status'] == 'success') {
         final String filename = responseData['filename'];
         final String hexContent = responseData['content'];
 
-        // Decode hex string to bytes
-        // final bytes = hexToBytes(hexContent);
-
         return hexToBytes(hexContent);
-
-        // // Get the directory to save the file
-        // final directory = await getApplicationDocumentsDirectory();
-        // final filePath = '${directory.path}/$filename';
-
-        // // Write the bytes to the file
-        // final file = File(filePath);
-        // await file.writeAsBytes(bytes);
-
-        // print('File saved successfully at $filePath');
-        // return true;
       } else {
         print('Error: ${responseData['detail']}');
         return null;
@@ -176,4 +189,84 @@ List<int> hexToBytes(String hex) {
     bytes.add(int.parse(byteString, radix: 16));
   }
   return bytes;
+}
+
+Future<List<FileObjectNode>?> fetchFileRequireQueue(String token) async {
+  final String apiUrl =
+      'https://api_mtds.yuufeng.com/api/v1/file/require_queue/';
+  var _apiDio = Dio();
+  (_apiDio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    return client;
+  };
+
+  try {
+    final response = await _apiDio.get(Uri.parse(apiUrl).toString(),
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ));
+    var retList = <FileObjectNode>[];
+    if (response.statusCode == 200) {
+      List<dynamic> datas = response.data;
+      for (var data in datas) {
+        // print(data);
+        retList.add(FileObjectNode.fromDict(data));
+      }
+      return retList;
+    } else {
+      print('Failed to load data: ${response.statusCode}');
+      return null;
+    }
+  } catch (e) {
+    print('Error: $e');
+    return null;
+  }
+}
+
+Future<UserInfo?> _getUserInfo(String token) async {
+  var _apiDio = Dio();
+  (_apiDio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    return client;
+  };
+  final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/auth/me');
+  UserInfo info;
+
+  try {
+    final response = await _apiDio.get(url.toString(),
+        options: Options(
+          headers: {
+            'accept': 'application/json',
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          followRedirects: true,
+        ));
+
+    if (response.statusCode == 200) {
+      final userJson = response.data['username'];
+      info = UserInfo();
+      info.setUserInfo(
+        userId: userJson['user_id'],
+        username: userJson['username'],
+        hashedPassword: userJson['hashed_password'],
+        rootUuid: userJson['root_uuid'],
+      );
+      return info;
+    } else {
+      print('failded to get user info');
+      print(response.data);
+      return null;
+    }
+  } catch (e) {
+    print(e);
+    return null;
+  }
 }
