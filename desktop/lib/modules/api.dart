@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:mtds/modules/user.dart';
 import 'dart:io';
 import 'package:dio/io.dart';
+import 'package:http_parser/http_parser.dart';
 
 Future<List<String>?> getFileInfoChildren(String token, String uuid) async {
   var _apiDio = Dio();
@@ -268,5 +269,49 @@ Future<UserInfo?> _getUserInfo(String token) async {
   } catch (e) {
     print(e);
     return null;
+  }
+}
+
+Future<void> uploadFileToRequireQueue(
+    String token, String uuid, String filePath) async {
+  // Create Dio instance
+  var dio = Dio();
+  (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    return client;
+  };
+
+  // Prepare the file to be uploaded
+  var file = await MultipartFile.fromFile(filePath,
+      contentType: MediaType('application', 'pdf'));
+
+  // Prepare FormData
+  FormData formData = FormData.fromMap({
+    'file': file,
+  });
+
+  // Set headers
+  Options options = Options(
+    headers: {
+      'accept': 'application/json',
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'multipart/form-data'
+    },
+  );
+
+  // Perform the POST request
+  try {
+    Response response = await dio.post(
+      'https://api_mtds.yuufeng.com/api/v1/file/require_queue/$uuid',
+      data: formData,
+      options: options,
+    );
+    // Handle response from the server
+    print('Response status: ${response.statusCode}');
+    print('Response data: ${response.data}');
+  } catch (e) {
+    print('Error sending file: $e');
   }
 }

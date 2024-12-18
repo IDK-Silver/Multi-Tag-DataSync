@@ -48,6 +48,7 @@ dependencies:
   uuid: ^4.5.1
   filesystem_picker: ^4.1.0
   crypto: ^3.0.2
+  http_parser: ^4.0.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -125,7 +125,11 @@ class _FilePageState extends State<FilePage> {
     }
 
     for (final uuid in requiredUuidList) {
-      final localUuid = fileBinaryController.read(uuid);
+      final localInfo = await fileBinaryController.read(uuid);
+      if (localInfo == null) continue;
+      if (localInfo.path == null) continue;
+
+      uploadFileToRequireQueue(token, uuid, localInfo.path!);
     }
   }
 
