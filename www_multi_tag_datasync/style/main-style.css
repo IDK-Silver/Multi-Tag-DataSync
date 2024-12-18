@@ -10,30 +10,6 @@ body {
     width: 100%;
 }
 
-.sidebar {
-    width: 25%;
-    background-color: #f5f5f5;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-}
-
-.sidebar li {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 0;
-}
-
-.sidebar li:hover {
-    background-color: #e0e0e0;
-}
-
 .details-panel {
     width: 75%;
     padding: 20px;
@@ -69,7 +45,7 @@ input[readonly] {
     left: 20px;
     /* 距離左側 20px */
     padding: 10px 15px;
-    background-color:rgb(0, 0, 0);
+    background-color: rgb(0, 0, 0);
     /* 紅色背景 */
     color: white;
     border: none;
@@ -79,28 +55,113 @@ input[readonly] {
 }
 
 .logout-button:hover {
-    background-color:rgb(233, 182, 182);
+    background-color: rgb(233, 182, 182);
     /* 滑鼠懸停時的顏色 */
-}
-.sidebar ul {
-    list-style-type: none;
-    padding-left: 20px; /* 子項縮排 */
-    margin: 0;
-}
-
-.sidebar li {
-    cursor: pointer;
-    margin: 5px 0;
-    display: flex;
-    align-items: center;
-}
-
-.sidebar .material-icons {
-    margin-right: 5px;
-    font-size: 18px;
 }
 
 .loading {
     font-style: italic;
     color: gray;
+}
+/* 側邊目錄樣式 */
+.sidebar {
+    width: 250px;
+    background-color: #f9f9f9;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+}
+
+#file-tree {
+    list-style: none;
+    padding-left: 0;
+}
+
+#file-tree li {
+    margin: 5px 0;
+    padding-left: 20px;
+    position: relative;
+}
+
+/* 文件與資料夾圖示樣式 */
+.folder-icon,
+.file-icon {
+    vertical-align: middle;
+    margin-right: 8px;
+    color: #666;
+}
+
+.folder-icon {
+    color: #ff9800;
+}
+
+.file-icon {
+    color: #2196f3;
+}
+
+/* 子目錄縮進 */
+#file-tree ul {
+    padding-left: 20px;
+    margin: 5px 0 0 0;
+    border-left: 1px dashed #ccc;
+}
+
+#file-tree ul li::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10px;
+    width: 10px;
+    height: 100%;
+    border-left: 1px solid #ccc;
+}
+/* 標籤 */
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tag-section {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tag-section input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.tag-section button {
+    padding: 5px 10px;
+    background-color: #2196f3;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tag-section button:hover {
+    background-color: #1976d2;
+}
+
+#tags-container {
+    margin-top: 10px;
+}
+
+#tags-list {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0;
+}
+
+#tags-list li {
+    display: inline-block;
+    background-color: #f1f1f1;
+    color: #333;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-right: 5px;
+    font-size: 14px;
 }

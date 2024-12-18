@@ -1,3 +1,4 @@
+<!-- main.php -->
 <?php
 // Initialize session and error reporting
 session_start();
@@ -12,7 +13,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
 // Get the logged-in user info
 $now_user = $_SESSION['username'];
-$rootID = $_SESSION['root_uuid']; 
+$rootID = $_SESSION['root_uuid'];
 $access_token = $_SESSION['access_token'];
 $current_folder_uuid = isset($_GET['folder_uuid']) ? $_GET['folder_uuid'] : null;
 
@@ -118,6 +119,15 @@ if ($folder_contents) {
         <!-- 右側詳細資訊 -->
         <main class="details-panel">
             <div class="details-content">
+                <div class="details-header">
+                    <h3>檔案資訊</h3>
+                    <!-- 新增標籤功能 -->
+                    <div class="tag-section">
+                        <input type="text" id="new-tag" placeholder="新增標籤" />
+                        <button onclick="addTag()">新增</button>
+                    </div>
+                </div>
+
                 <label for="filename">Filename</label>
                 <input type="text" id="filename" readonly>
 
@@ -248,6 +258,63 @@ if ($folder_contents) {
                 });
         }
 
+        // 新增標籤功能 待修
+        function addTag() {
+            const newTag = document.getElementById("new-tag").value.trim();
+            const fileUUID = document.getElementById("uuid").innerText;
+
+            console.log("newTag:", newTag);
+            console.log("fileUUID:", fileUUID);
+
+            if (!newTag) {
+                alert("請輸入標籤名稱！");
+                return;
+            }
+
+            // 修正格式：doc_info 包含 uuid，tags 是一個陣列
+            const requestData = {
+                doc_info: { uuid: fileUUID },
+                tags: [newTag]  // 確保 tags 是陣列
+            };
+
+            console.log("Request Data:", requestData);
+
+            fetch("http://127.0.0.1:8000/api/v1/file/info/add_tags", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + accessToken
+                },
+                body: JSON.stringify(requestData)
+            })
+                .then(response => {
+                    console.log("Response Status:", response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Response Data:", data);
+                    if (data.detail === "Tag add Successfully.") {
+                        alert("標籤新增成功！");
+                        displayTag(newTag); // 更新標籤列表
+                        document.getElementById("new-tag").value = ""; // 清空輸入欄
+                    } else {
+                        alert("標籤新增失敗：" + JSON.stringify(data));
+                    }
+                })
+                .catch(error => {
+                    console.error("Error adding tag:", error);
+                    alert("發生錯誤，請稍後再試。");
+                });
+        }
+
+
+        // 顯示標籤到標籤列表
+        function displayTag(tag) {
+            const tagsList = document.getElementById("tags-list");
+            const tagItem = document.createElement("li");
+            tagItem.textContent = tag;
+            tagsList.appendChild(tagItem);
+        }
     </script>
 </body>
 
