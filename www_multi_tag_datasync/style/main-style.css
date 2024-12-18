@@ -135,6 +135,7 @@ input[readonly] {
 
 .tag-section button {
     padding: 5px 10px;
+    margin-left: 5px;
     background-color: #2196f3;
     color: #fff;
     border: none;
@@ -164,4 +165,41 @@ input[readonly] {
     border-radius: 4px;
     margin-right: 5px;
     font-size: 14px;
+}
+
+/* Tooltip 基本樣式 */
+.file-name {
+    position: relative;
+    cursor: pointer; /* 鼠標變成指針 */
+}
+
+.file-name::after {
+    content: attr(data-tooltip); /* 使用 data-tooltip 的值 */
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.file-name:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+.sidebar li span {
+    display: inline-block;     /* 讓 span 遵循寬度設置 */
+    max-width: 100%;           /* 最大寬度依據 sidebar 大小 */
+    overflow: hidden;          /* 隱藏溢出文字 */
+    text-overflow: ellipsis;   /* 顯示省略號 */
+    white-space: nowrap;       /* 禁止換行 */
+    cursor: pointer;           /* 鼠標顯示指針 */
 }
