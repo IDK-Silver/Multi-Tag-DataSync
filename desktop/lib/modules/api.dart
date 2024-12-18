@@ -158,8 +158,7 @@ Future<List<int>?> getBinaryFile(String uuid, String token) async {
         ));
     if (response.statusCode == 200) {
       // Parse the JSON response
-      final Map<String, dynamic> responseData =
-          json.decode(response.data.toString());
+      final Map<String, dynamic> responseData = response.data;
 
       if (responseData['status'] == 'success') {
         final String filename = responseData['filename'];
