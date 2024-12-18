@@ -85,7 +85,7 @@ class _FilePageState extends State<FilePage> {
 
   void _startPeriodicExecution() {
     // 每5秒檢查一次
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!_isExecuting) {
         _executeCheckFileRequiredQueue();
       } else {
