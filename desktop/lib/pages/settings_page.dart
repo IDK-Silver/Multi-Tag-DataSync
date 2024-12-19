@@ -101,29 +101,29 @@ class _SettingsPageState extends State<SettingsPage> {
               '同步設置',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            Text(
-              selectedDirectory ?? '尚未選擇同步資料夾',
-              style: const TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: () async {
-                final directory = await FilePicker.platform.getDirectoryPath();
-                if (directory != null) {
-                  setState(() {
-                    selectedDirectory = directory;
-                  });
-                }
-              },
-              icon: const Icon(Icons.folder_open),
-              label: const Text('選擇同步資料夾'),
-              style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-            ),
+            // const SizedBox(height: 12),
+            // Text(
+            //   selectedDirectory ?? '尚未選擇同步資料夾',
+            //   style: const TextStyle(fontSize: 16),
+            //   textAlign: TextAlign.center,
+            // ),
+            // const SizedBox(height: 12),
+            // ElevatedButton.icon(
+            //   onPressed: () async {
+            //     final directory = await FilePicker.platform.getDirectoryPath();
+            //     if (directory != null) {
+            //       setState(() {
+            //         selectedDirectory = directory;
+            //       });
+            //     }
+            //   },
+            //   icon: const Icon(Icons.folder_open),
+            //   label: const Text('選擇同步資料夾'),
+            //   style: ElevatedButton.styleFrom(
+            //     padding:
+            //         const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            //   ),
+            // ),
 
             // 保存按鈕
             const SizedBox(height: 32),
@@ -145,13 +145,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
 
                 basicConfigController.put(existingConfig);
-
-                // await isar.writeTxn(() async {
-                //   await isar.basicConfigs.put(existingConfig!);
-                // });
-
-                // isar.close();
-
                 if (mounted) {
                   scaffoldMessenger.showSnackBar(
                     const SnackBar(content: Text('設定已保存')),

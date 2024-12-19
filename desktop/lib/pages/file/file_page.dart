@@ -84,7 +84,6 @@ class _FilePageState extends State<FilePage> {
   }
 
   void _startPeriodicExecution() {
-    // 每5秒檢查一次
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!_isExecuting) {
         _executeCheckFileRequiredQueue();
@@ -104,7 +103,6 @@ class _FilePageState extends State<FilePage> {
   }
 
   Future<void> checkFileRequiredQueue() async {
-    // return;
     final token = await _getToken();
     if (token.isEmpty) {
       print('checkFileRequiredQueue : token is empty');
@@ -441,7 +439,7 @@ class _FilePageState extends State<FilePage> {
     return Row(
       children: [
         Expanded(
-            flex: 1,
+            flex: 4,
             child: Container(
               color: const Color.fromARGB(255, 245, 245, 245),
               child: Column(
@@ -541,7 +539,7 @@ class _FilePageState extends State<FilePage> {
               ),
             )),
         Expanded(
-            flex: 2,
+            flex: 4,
             child: Container(
               color: Color.fromARGB(119, 239, 234, 234),
               child: Stack(children: [
