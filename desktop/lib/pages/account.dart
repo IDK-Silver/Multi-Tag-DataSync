@@ -4,14 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:mtds/modules/configs/controler.dart';
 import 'package:mtds/modules/configs/basic.dart';
 import 'package:mtds/modules/user.dart';
 import 'dart:io';
-import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:mtds/modules/api.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -62,18 +61,9 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<UserInfo?> _getUserInfo(String token) async {
-    final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/auth/me');
+    final String url = (await getHostUrl()) + 'api/v1/auth/me';
     UserInfo info;
-
     try {
-      // final response = await http.post(
-      //   url,
-      //   headers: {
-      //     'accept': 'application/json',
-      //     'Authorization': 'Bearer $token',
-      //   },
-      // );
-
       final response = await dio.get(url.toString(),
           options: Options(
             headers: {
@@ -109,9 +99,10 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<void> _handleLogin() async {
+    final String url = (await getHostUrl()) + 'api/v1/auth/login';
     try {
       final response = await dio.post(
-        'https://api_mtds.yuufeng.com/api/v1/auth/login',
+        url,
         options: Options(headers: {
           'accept': 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded',

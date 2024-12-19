@@ -26,6 +26,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:mtds/modules/api.dart';
 
 class UserInfo {
   static final UserInfo _instance = UserInfo._internal();
@@ -77,8 +78,8 @@ class UserInfo {
           (X509Certificate cert, String host, int port) => true;
       return client;
     };
-
-    final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/auth/me');
+    final String url = (await getHostUrl()) + 'api/v1/auth/me';
+    // final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/auth/me');
     try {
       final response = await dio.get(url.toString(),
           options: Options(

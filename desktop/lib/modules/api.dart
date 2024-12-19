@@ -6,6 +6,29 @@ import 'package:mtds/modules/user.dart';
 import 'dart:io';
 import 'package:dio/io.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:mtds/modules/configs/controler.dart';
+
+Future<String> getHostUrl() async {
+  final basicConfigController = BasicConfigController();
+
+  var config = await basicConfigController.read();
+  if (config == null) {
+    print("Failed to get host URL: Config does not exist.");
+    return "https://localhost/"; // Return default URL if config is null
+  }
+
+  if (config.apiURL == null || config.apiURL!.isEmpty) {
+    print("Warning: apiURL is empty or null, using default URL.");
+    return "https://localhost/";
+  }
+
+  // Ensure API URL ends with a '/'
+  if (!config.apiURL!.endsWith("/")) {
+    config.apiURL = "${config.apiURL}/";
+  }
+
+  return config.apiURL!;
+}
 
 Future<List<String>?> getFileInfoChildren(String token, String uuid) async {
   var _apiDio = Dio();
@@ -15,7 +38,8 @@ Future<List<String>?> getFileInfoChildren(String token, String uuid) async {
         (X509Certificate cert, String host, int port) => true;
     return client;
   };
-  const String url = 'https://api_mtds.yuufeng.com/api/v1/file/info/children';
+
+  final String url = (await getHostUrl()) + 'api/v1/file/info/children';
   try {
     final response = await _apiDio.post(
       Uri.parse(url).toString(),
@@ -63,7 +87,9 @@ Future<bool> modifyFileInfo(String token, FileObjectNode info) async {
         (X509Certificate cert, String host, int port) => true;
     return client;
   };
-  final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/info/modify');
+  // final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/info/modify');
+  final String url = (await getHostUrl()) + 'api/v1/file/info/modify';
+
   try {
     final response = await _apiDio.post(
       url.toString(),
@@ -102,7 +128,9 @@ Future<bool> deleteFileInfo(String token, FileObjectNode info) async {
         (X509Certificate cert, String host, int port) => true;
     return client;
   };
-  final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/info/modify');
+  // final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/info/modify');
+  final String url = (await getHostUrl()) + 'api/v1/file/info/modify';
+
   try {
     final response = await _apiDio.delete(
       url.toString(),
@@ -145,8 +173,10 @@ Future<List<int>?> getBinaryFile(String uuid, String token) async {
         (X509Certificate cert, String host, int port) => true;
     return client;
   };
-  final url =
-      Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/require_queue/$uuid');
+  // final url =
+  //     Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/require_queue/$uuid');
+
+  final url = (await getHostUrl()) + 'api/v1/file/require_queue/$uuid';
 
   try {
     final response = await _apiDio.get(url.toString(),
@@ -192,8 +222,10 @@ List<int> hexToBytes(String hex) {
 }
 
 Future<List<FileObjectNode>?> fetchFileRequireQueue(String token) async {
-  final String apiUrl =
-      'https://api_mtds.yuufeng.com/api/v1/file/require_queue/';
+  // final String apiUrl =
+  //     'https://api_mtds.yuufeng.com/api/v1/file/require_queue/';
+
+  final String apiUrl = (await getHostUrl()) + 'api/v1/file/require_queue/';
   var _apiDio = Dio();
   (_apiDio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
       (HttpClient client) {
@@ -236,7 +268,9 @@ Future<UserInfo?> _getUserInfo(String token) async {
         (X509Certificate cert, String host, int port) => true;
     return client;
   };
-  final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/auth/me');
+  // final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/auth/me');
+  final String url = (await getHostUrl()) + 'api/v1/auth/me';
+
   UserInfo info;
 
   try {
@@ -299,11 +333,12 @@ Future<void> uploadFileToRequireQueue(
       'Content-Type': 'multipart/form-data'
     },
   );
+  final String url = (await getHostUrl()) + 'api/v1/file/require_queue/$uuid';
 
   // Perform the POST request
   try {
     Response response = await dio.post(
-      'https://api_mtds.yuufeng.com/api/v1/file/require_queue/$uuid',
+      url,
       data: formData,
       options: options,
     );

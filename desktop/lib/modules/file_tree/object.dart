@@ -21,6 +21,7 @@ import 'package:mtds/modules/user.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:mtds/modules/api.dart';
 
 enum FileObjectType {
   file,
@@ -91,7 +92,8 @@ class FileObjectNode {
           (X509Certificate cert, String host, int port) => true;
       return client;
     };
-    final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/info/');
+    final String url = (await getHostUrl()) + 'api/v1/file/info/';
+    // final url = Uri.parse('https://api_mtds.yuufeng.com/api/v1/file/info/');
     try {
       final response = await dio.post(
         url.toString(),
