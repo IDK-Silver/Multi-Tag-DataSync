@@ -1,30 +1,90 @@
-/* 設置表單輸入區域的對齊樣式 */
-.form-group {
+/* Black and White Multi-Tag-DataSync Theme */
+body {
+    font-family: 'Arial', sans-serif;
+    background: #ffffff; /* Black background for a sleek theme */
+    color: #fff; /* White text for readability */
+    margin: 0;
+    padding: 0;
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: 10px;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-.form-group label {
-    width: 100px; /* 設置label的寬度來保持對齊 */
-    text-align: right;
-    margin-right: 10px;
+h2 {
+    font-size: 2rem;
+    color: #000000;
+    align-items: center;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    text-align: center;
 }
 
-.form-group input {
-    width: 200px; /* 設置input的寬度 */
-    padding: 5px;
-}
-
-/* 控制表單中心對齊 */
-.form-container {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
+form {
+    background: #1c1c1c; /* Slightly lighter black for contrast */
+    padding: 25px;
     border-radius: 10px;
+    box-shadow: 0 8px 15px rgba(255, 255, 255, 0.1);
+    max-width: 400px;
+    width: 80%;
+    display: flex; /* Flexbox for centering */
+    flex-direction: column; /* Arrange items vertically */
+    align-items: center; /* Center horizontally */
+    justify-content: center; /* Center vertically */
+    text-align: center; /* Ensure text alignment */
+    margin: 0 auto;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #ddd; /* Light gray for labels */
+    text-align: left; /* Optional for label alignment */
+    width: 100%; /* Ensure it spans full width of form */
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    max-width: 350px; /* Optional for limiting input width */
+    padding: 10px;
+    margin-bottom: 15px;
+    background: #333; /* Dark gray input fields */
+    border: 1px solid #444; /* Subtle border for definition */
+    border-radius: 5px;
+    color: #fff;
+    transition: all 0.3s ease;
 }
 
 input[type="submit"] {
-    margin: 10px 5px;
+    width: 45%; /* Buttons take half width each */
+    max-width: 150px; /* Optional limit for button size */
+    padding: 10px;
+    margin: 5px;
+    background: #444; /* Gray buttons */
+    color: #fff;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
 }
+
+input[type="submit"]:hover {
+    background: #fff; /* White background on hover */
+    color: #000; /* Black text on hover */
+}
+
+@media (max-width: 600px) {
+    form {
+        width: 90%;
+        padding: 20px;
+    }
+
+    input[type="submit"] {
+        width: 100%;
+        margin: 10px 0;
+    }
+}
+

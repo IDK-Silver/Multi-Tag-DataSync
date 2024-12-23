@@ -87,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/sign_up-style.css">
     <title>註冊</title>
     <script>
         <?php if (!empty($error_message)) : ?>
@@ -97,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body>
     <center>
-    <h2>註冊</h2>
+    <h2>Multi-Tag-DataSync</h2>
     <form action="sign_up.php" method="post">
         <label for="username">用戶名:</label>
         <input type="text" id="username" name="username"><br><br>

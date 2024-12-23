@@ -100,7 +100,7 @@ if ($folder_contents) {
     <title>User Files</title>
     <link rel="stylesheet" href="style/main-style.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
+
 </head>
 
 <body>
@@ -122,11 +122,26 @@ if ($folder_contents) {
             <div class="details-content">
                 <div class="details-header">
                     <h3>檔案資訊</h3>
+                    <!-- 搜尋功能 -->
+                     
+                    <div class="search-bar-container">
+                        <form class="search-bar" onsubmit="searchFiles(); return false;">
+                            <input type="text" id="search-query" class="search-input" placeholder="搜尋檔案或資料夾"
+                                oninput="fetchSearchResults()" />
+                            <button type="submit" class="search-button">
+                                <span class="material-icons">search</span>
+                            </button>
+                        </form>
+                        <ul id="search-results" class="search-results"></ul>
+                    </div>
+
+
                     <!-- 新增標籤功能 -->
                     <div class="tag-section">
                         <input type="text" id="new-tag" placeholder="新增標籤" />
                         <button onclick="addTag()">新增</button>
                         <button id="delete-file-button" onclick="deleteFile()">刪除檔案</button>
+                        <button id="download-file-button" onclick="downloadFile()">下載檔案</button>
                     </div>
                 </div>
 
@@ -142,6 +157,9 @@ if ($folder_contents) {
                 <label for="hash">Hash</label>
                 <p id="hash">N/A</p>
 
+                <label for="Tags">Tags</label>
+                <p id="Tags">N/A</p>
+
             </div>
         </main>
     </div>
@@ -152,7 +170,7 @@ if ($folder_contents) {
         const accessToken = "<?php echo $access_token; ?>";
     </script>
     <script src="main.js"></script>
-    
+
 
 
 </body>

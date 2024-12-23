@@ -15,11 +15,13 @@ const rootFolder = {
 // 顯示檔案或資料夾詳細資訊
 function showDetails(filename, type, timestamp, uuid, hash, element) {
     document.getElementById("filename").value = filename;
-    document.getElementById("filename").setAttribute("title", filename); // 設置 Tooltip
+    document.getElementById("filename").setAttribute("title", filename);
     document.getElementById("timestamp").innerText = timestamp || "N/A";
     document.getElementById("uuid").innerText = uuid || "N/A";
     document.getElementById("hash").innerText = hash || "N/A";
 
+    // 清空搜尋結果
+    document.getElementById("search-results").innerHTML = "";
 
     // 若為資料夾，展開子項目
     if (type === "1") {
@@ -253,3 +255,70 @@ function applyTooltipForOverflow() {
         }
     });
 }
+
+//搜尋檔案
+function searchFiles() {
+    const query = document.getElementById("search-query").value.trim();
+
+    if (!query) {
+        alert("請輸入搜尋關鍵字！");
+        return;
+    }
+
+    // 清空先前的搜尋結果
+    const resultsContainer = document.getElementById("search-results");
+    resultsContainer.innerHTML = "Loading...";
+
+    // 構建 URL，將搜尋參數作為查詢字串
+    const url = `http://127.0.0.1:8000/api/v1/file/info/search?filename=${encodeURIComponent(query)}`;
+
+    // 調用 API 搜尋檔案
+    fetch(url, {
+        method: "GET",
+        headers: {
+            "Authorization": "Bearer " + accessToken
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 清空搜尋結果
+            resultsContainer.innerHTML = "";
+
+            if (!Array.isArray(data) || data.length === 0) {
+                resultsContainer.innerHTML = "<li>No files found.</li>";
+                return;
+            }
+
+            // 顯示搜尋結果
+            data.forEach(item => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <span class="material-icons" title="${item.filename}">
+                        ${item.d_id === "1" ? "folder" : "insert_drive_file"}
+                    </span>
+                    <span title="${item.filename}">
+                        ${item.filename}
+                    </span>`;
+                li.onclick = () =>
+                    showDetails(
+                        item.filename,
+                        item.d_id,
+                        item.timestamp,
+                        item.uuid,
+                        item.hash,
+                        li
+                    );
+                resultsContainer.appendChild(li);
+            });
+        })
+        .catch(error => {
+            console.error("Error searching files:", error);
+            resultsContainer.innerHTML = `<li>No files found.</li>`;
+        });
+}
+

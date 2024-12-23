@@ -22,7 +22,7 @@ form {
     margin: 10px; /* 設置按鈕之間的距離 */
     font-size: 16px;
     color: black;
-    background-color:aqua;
+    background-color:rgb(255, 255, 255);
 }
 
 #login
@@ -31,6 +31,6 @@ form {
     margin: 10px; /* 設置按鈕之間的距離 */
     font-size: 16px;
     color: black;
-    background-color: aqua;
+    background-color: rgb(255, 255, 255);
 }
 
