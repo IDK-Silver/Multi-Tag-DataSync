@@ -5,7 +5,7 @@ from typing import Union, List
 
 from app.core import db
 from app.core.db import DatabaseConnection
-import typing 
+
 
 
 class FileObjectType(IntEnum):
@@ -27,10 +27,7 @@ class FileObjectUUID:
 
     def __eq__(self, other):
         """判斷兩個 UUID 是否相等"""
-        if isinstance(other, FileObjectUUID):
-            return self.to_string() == other.to_string()
-        else:
-            return self.to_string() == other
+        return self.to_string() == other.to_string()
 
     @staticmethod
     def generate():
@@ -40,15 +37,13 @@ class FileObjectUUID:
 
 class FileObject:
     """表示一個檔案或目錄的對象"""
-    def __init__(self, uuid:FileObjectUUID =FileObjectUUID()):
+    def __init__(self):
         self.filename: str = ""  # 檔案名稱
-        self.uuid: FileObjectUUID = uuid
-        if isinstance(self.uuid, str):
-            self.uuid = FileObjectUUID(uuid=uuid)
+        self.uuid: FileObjectUUID = FileObjectUUID()  # 檔案的唯一 ID
         self.parent_id: FileObjectUUID = FileObjectUUID()  # 父目錄的 UUID
-        self.d_id: FileObjectType = FileObjectType.file  # 檔案類型 (file 或 directory)
+        self.d_id: FileObjectType  # 檔案類型 (file 或 directory)
         self.hash: str = ""  # 檔案的 hash 值
-        self.timestamp: datetime = datetime.now()  # 檔案的創建時間
+        self.timestamp: datetime  # 檔案的創建時間
 
     def is_root(self) -> bool:
         """檢查是否為根目錄"""
@@ -64,7 +59,7 @@ class FileObject:
         self.uuid = FileObjectUUID(dictionary["doc_uuid"])
         self.parent_id = FileObjectUUID(dictionary["parent_uuid"])
         self.d_id = FileObjectType(dictionary["d_id"])
-        self.timestamp: datetime = dictionary["timestamp"]
+        self.timestamp = dictionary["timestamp"]
         self.hash = dictionary["doc_hash"]
 
     @staticmethod
@@ -280,9 +275,9 @@ class FileObjectTree:
         else:
             inorder_traversal(self.root)
 
-file_object_queue: typing.List[FileObject] = [
-    
-]
+
+file_object_queue: List[FileObject] = []
+
 if __name__ == "__main__":
     doc = FileObject.from_db('00524c02-a740-11ef-95a9-0242ac150002')
     print(doc)
