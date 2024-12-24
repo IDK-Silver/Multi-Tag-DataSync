@@ -86,7 +86,6 @@ async def get_binary_from_queue(uuid: str, current_user: User = Depends(get_curr
     exist_uuids = [
         file for file in os.listdir(storage_path)
     ]
-
     if uuid not in exist_uuids:
         file_object_queue.append(FileObject(uuid))
         raise HTTPException(status_code=404, detail="File not found in the queue.")

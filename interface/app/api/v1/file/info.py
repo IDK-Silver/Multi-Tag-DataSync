@@ -231,3 +231,43 @@ async def get_children(doc_info: DocUUIDSchema, current_user: User = Depends(get
     ret = [DocUUIDSchema(uuid=info['doc_uuid']) for info in children_infos]
 
     return ret
+
+#const url = `http://127.0.0.1:8000/api/v1/file/info/search?filename=${encodeURIComponent(query)}`;
+@router.get("/search", response_model=List[DocInfoSchema])
+async def search_files_by_name(
+    filename: str,
+    current_user: User = Depends(get_current_user)
+):
+    if not filename.strip():
+        raise HTTPException(status_code=400, detail="Filename is required for searching.")
+    db = DatabaseConnection.get_instance()
+    query = """
+        SELECT filename, doc_uuid, parent_uuid, CAST(d_id AS CHAR) AS d_id, doc_hash, timestamp, uploaded_by
+        FROM doc
+        WHERE filename LIKE %s AND uploaded_by = %s
+    """
+    try:
+        print(f"Executing query: {query} with filename: %{filename}% and user_id: {current_user.user_id}")
+        
+        result = db.execute_query(query, (f"{filename}%", current_user.user_id))
+        if not result:
+            print("No results found")
+            raise HTTPException(
+                status_code=404,
+                detail="No files found for the given name and user.",
+            )
+        files = [
+            DocInfoSchema(
+                filename=row["filename"],
+                uuid=row["doc_uuid"],
+                parent_id=row["parent_uuid"],
+                d_id=row["d_id"],
+                hash=row["doc_hash"],
+                timestamp=row["timestamp"],
+            )
+            for row in result
+        ]
+        return files
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error executing search: {str(e)}")

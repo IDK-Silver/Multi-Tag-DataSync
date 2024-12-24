@@ -95,3 +95,47 @@ async def get_tag_by_doc_uuid(uuid: str  ,current_user: User = Depends(get_curre
     """
 
     return [info['tag'] for info in db.execute_query(query, (uuid,)) ]
+
+
+@router.delete("/")
+async def delete_tag_from_db(tag_info: DocTagSchema, current_user: User = Depends(get_current_user)):
+    """
+    刪除文件的特定標籤
+    """
+    # 確保輸入的資料有效
+    if not tag_info.uuid or not tag_info.tag:
+        raise HTTPException(
+            status_code=400,
+            detail="Both doc-uuid and tag must be provided"
+        )
+
+    # 確保文件存在於資料庫中
+    doc_info = FileObject.from_db(tag_info.uuid)
+    if not doc_info or doc_info.uuid is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found by the provided UUID"
+        )
+
+    # 建立資料庫連線
+    db = DatabaseConnection.get_instance()
+
+    # 查詢標籤是否存在於文件的標籤中
+    query = """
+        SELECT * FROM doc_tags WHERE doc_uuid = %s AND tag = %s;
+    """
+    result = db.execute_query(query, (tag_info.uuid, tag_info.tag))
+    if not result or len(result) == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Tag not found for the provided document UUID"
+        )
+
+    # 刪除標籤
+    query = """
+        DELETE FROM doc_tags WHERE doc_uuid = %s AND tag = %s;
+    """
+    db.execute_update(query, (tag_info.uuid, tag_info.tag))
+
+    return {"detail": f"Tag '{tag_info.tag}' deleted successfully from document '{tag_info.uuid}'"}
+
