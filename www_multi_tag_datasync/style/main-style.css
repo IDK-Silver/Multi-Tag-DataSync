@@ -114,7 +114,7 @@ input[readonly] {
     height: 100%;
     border-left: 1px solid #ccc;
 }
-/* 標籤 */
+/* 右上角按鈕 */
 .details-header {
     display: flex;
     justify-content: space-between;
@@ -204,8 +204,6 @@ input[readonly] {
     cursor: pointer;           /* 鼠標顯示指針 */
 }
 
-
-
 /* 搜尋結果容器 */
 .search-results {
     position: absolute;
@@ -247,4 +245,30 @@ input[readonly] {
 .search-results li .material-icons {
     font-size: 20px;
     color: #666;
+}
+
+/* 標籤顯示 */
+#tags-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.tag-item {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.tag-item:hover {
+    background-color: #e0e0e0;
+    border-color: #aaa;
+    color: red; /* 提示刪除操作 */
 }

@@ -23,6 +23,12 @@ function showDetails(filename, type, timestamp, uuid, hash, element) {
     // 清空搜尋結果
     document.getElementById("search-results").innerHTML = "";
 
+    if (uuid) {
+        fetchTags(uuid); // 調用 fetchTags 函數來更新標籤顯示
+    } else {
+        document.getElementById("tags-list").innerHTML = "<li>No tags available.</li>";
+    }
+
     // 若為資料夾，展開子項目
     if (type === "1") {
         fetchFolderContents(uuid, element);
@@ -140,63 +146,6 @@ function fetchFolderContents(folderUuid, parentElement) {
             console.error("Error fetching folder contents:", error);
             ul.innerHTML = '<li>No files</li>';
         });
-}
-
-// 新增標籤功能 待修
-function addTag() {
-    const newTag = document.getElementById("new-tag").value.trim();
-    const fileUUID = document.getElementById("uuid").innerText;
-
-    console.log("newTag:", newTag);
-    console.log("fileUUID:", fileUUID);
-
-    if (!newTag) {
-        alert("請輸入標籤名稱！");
-        return;
-    }
-
-    // 修正格式：doc_info 包含 uuid，tags 是一個陣列
-    const requestData = {
-        doc_info: { uuid: fileUUID },
-        tags: [newTag]  // 確保 tags 是陣列
-    };
-
-    console.log("Request Data:", requestData);
-
-    fetch("http://127.0.0.1:8000/api/v1/file/info/add_tags", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + accessToken
-        },
-        body: JSON.stringify(requestData)
-    })
-        .then(response => {
-            console.log("Response Status:", response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log("Response Data:", data);
-            if (data.detail === "Tag add Successfully.") {
-                alert("標籤新增成功！");
-                displayTag(newTag); // 更新標籤列表
-                document.getElementById("new-tag").value = ""; // 清空輸入欄
-            } else {
-                alert("標籤新增失敗：" + JSON.stringify(data));
-            }
-        })
-        .catch(error => {
-            console.error("Error adding tag:", error);
-            alert("發生錯誤，請稍後再試。");
-        });
-}
-
-// 顯示標籤到標籤列表
-function displayTag(tag) {
-    const tagsList = document.getElementById("tags-list");
-    const tagItem = document.createElement("li");
-    tagItem.textContent = tag;
-    tagsList.appendChild(tagItem);
 }
 
 // 刪除檔案
@@ -322,3 +271,168 @@ function searchFiles() {
         });
 }
 
+// 獲取標籤並顯示
+function fetchTags(uuid) {
+    fetch(`http://127.0.0.1:8000/api/v1/file/tag/${uuid}`, {
+        method: "GET",
+        headers: {
+            "Authorization": "Bearer " + accessToken
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(tags => {
+            const tagsList = document.getElementById("tags-list");
+            tagsList.innerHTML = ""; // 清空列表
+
+            if (!tags || tags.length === 0) {
+                const noTagItem = document.createElement("li");
+                noTagItem.textContent = "No tags available.";
+                tagsList.appendChild(noTagItem);
+                return;
+            }
+
+            // 渲染標籤列表
+            tags.forEach(tag => {
+                const tagItem = document.createElement("li");
+                tagItem.textContent = tag;
+                tagItem.className = "tag-item"; // 可用於自定義樣式
+                tagItem.onclick = () => deleteTag(uuid, tag); // 點擊刪除標籤
+                tagsList.appendChild(tagItem);
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching tags:", error);
+            const tagsList = document.getElementById("tags-list");
+            tagsList.innerHTML = "<li>Error loading tags</li>";
+        });
+}
+
+// 新增標籤
+function addTag() {
+    const fileUUID = document.getElementById("uuid").innerText;
+    const newTag = document.getElementById("new-tag").value.trim();
+
+    if (!fileUUID || fileUUID === "N/A") {
+        alert("請先選擇檔案！");
+        return;
+    }
+
+    if (!newTag) {
+        alert("請輸入標籤名稱！");
+        return;
+    }
+
+    if (!/^[a-zA-Z0-9_ -]+$/.test(newTag)) {
+        alert("標籤名稱包含不合法的字元！");
+        return;
+    }
+
+    fetch("http://127.0.0.1:8000/api/v1/file/tag/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + accessToken
+        },
+        body: JSON.stringify({ uuid: fileUUID, tag: newTag })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.detail === "Tag added") {
+                alert("標籤新增成功！");
+                fetchTags(fileUUID); // 更新標籤顯示
+                document.getElementById("new-tag").value = ""; // 清空輸入框
+            } else {
+                alert("新增標籤失敗：" + JSON.stringify(data));
+            }
+        })
+        .catch(error => {
+            console.error("Error adding tag:", error);
+            alert(`發生錯誤：${error.message}`);
+        });
+}
+
+//刪除標籤
+function deleteTag(fileUUID, tag) {
+    if (!confirm(`確定要刪除標籤 "${tag}" 嗎？`)) {
+        return;
+    }
+
+    fetch("http://127.0.0.1:8000/api/v1/file/tag/", {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + accessToken
+        },
+        body: JSON.stringify({ uuid: fileUUID, tag: tag })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(`標籤 "${tag}" 已成功刪除！`);
+            fetchTags(fileUUID); // 刪除成功後重新載入標籤
+        })
+        .catch(error => {
+            console.error("Error deleting tag:", error);
+            alert(`刪除標籤失敗：${error.message}`);
+        });
+}
+
+// 下載檔案
+function downloadFile() {
+    const fileUUID = document.getElementById("uuid").innerText;
+    const filename = document.getElementById("filename").value;
+
+    if (!fileUUID || fileUUID === "N/A") {
+        alert("請先選擇檔案！");
+        return;
+    }
+
+    fetch(`http://127.0.0.1:8000/api/v1/file/require_queue/${fileUUID}`, {
+        method: "GET",
+        headers: {
+            "Authorization": "Bearer " + accessToken,
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === "success" && data.content) {
+                const binaryContent = atob(data.content); // 將 Base64 解碼為二進制內容
+                const byteArray = new Uint8Array(binaryContent.length);
+
+                for (let i = 0; i < binaryContent.length; i++) {
+                    byteArray[i] = binaryContent.charCodeAt(i);
+                }
+
+                const blob = new Blob([byteArray], { type: "application/octet-stream" });
+                const link = document.createElement("a");
+                link.href = window.URL.createObjectURL(blob);
+                link.download = filename || "downloaded_file"; // 預設檔案名稱
+                link.click();
+            } else {
+                alert("無法下載檔案：" + data.detail || "未知錯誤");
+            }
+        })
+        .catch(error => {
+            console.error("Error downloading file:", error);
+            alert("下載失敗，請稍後再試！");
+        });
+}

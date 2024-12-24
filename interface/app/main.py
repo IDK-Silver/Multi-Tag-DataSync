@@ -11,5 +11,4 @@ app.add_middleware(
     allow_methods=["*"],  # 允許所有 HTTP 方法，例如 ["POST", "GET", "OPTIONS"]
     allow_headers=["*"],  # 允許所有標頭
 )
-
 app.include_router(api_router, prefix="/api/v1") 

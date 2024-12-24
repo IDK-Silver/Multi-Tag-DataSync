@@ -1,59 +1,78 @@
+from anyio.streams import file
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from app.modules.file_object import file_object_queue
 from app.schemas.auth import User
 from app.core.security import get_current_user
 from app.modules.file_object.object import FileObject, FileObjectUUID, FileObjectType
-from datetime import datetime
+import os
+import pathlib
+import typing
+from app.schemas.file.info import DocInfoSchema, DocUUIDSchema
+import configparser
+
 
 router = APIRouter()
 
 
-@router.get("/")
+config = configparser.ConfigParser()
+config.read('config/required_queue_config.ini')
+storage_path = pathlib.Path(config['RequiredQueue']['storage_path'])
+os.makedirs(storage_path.absolute(), exist_ok=True)
+split_word:str = config['RequiredQueue']['split_word']
+
+@router.get("/", response_model=typing.List[DocInfoSchema])
 async def list_queue(current_user: User = Depends(get_current_user)):
     """
     List all files currently in the require queue.
     - Returns a list of file objects in the queue.
     """
-    if not file_object_queue:
-        raise HTTPException(status_code=200, detail="Require queue is empty.")
-    
-    # Return the list of file objects
-    queue_list = [
-        {
-            "filename": file.filename,
-            "uuid": file.uuid.to_string(),
-            "parent_id": file.parent_id.to_string(),
-            "d_id": file.d_id.name,
-            "timestamp": file.timestamp.isoformat() if file.timestamp else None,
-            "hash": file.hash,
-        }
-        for file in file_object_queue
+    ret_list: typing.List[DocInfoSchema] = [
+        DocInfoSchema(
+            filename=file.filename,
+            uuid=file.uuid.to_string(),
+            parent_id=file.parent_id.to_string(),
+            d_id=file.d_id,
+            hash=file.hash,
+            timestamp=file.timestamp
+        ) for file in file_object_queue
     ]
-    return {"status": "success", "queue": queue_list}
+
+    return ret_list
 
 
-@router.post("/")
-async def add_binary_to_queue(file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
+@router.post("/{uuid}")
+async def add_binary_to_queue(uuid:str, file: UploadFile = File(...),  current_user: User = Depends(get_current_user)):
     """
-    Add a binary file to the require queue.
-    - Upload a file to add it to the queue.
+    Add a binary file to the server file.
+    - Upload a file to server, and remove it from the queue.
     """
-    try:
-        # Create a new FileObject
-        file_obj = FileObject()
-        file_obj.filename = file.filename
-        file_obj.uuid = FileObjectUUID.generate()  # Generate a unique UUID
-        file_obj.parent_id = FileObjectUUID("root")  # Default parent ID
-        file_obj.d_id = FileObjectType.file  # Default type as file
-        file_obj.timestamp = datetime.now()
-        file_obj.hash = "binary_hash_placeholder"  # Placeholder for hash
+    # try:
+        # Create a FileObject by upload file
+    upload_file_obj = FileObject()
+    upload_file_obj.filename = uuid
+    upload_file_obj.uuid = uuid
 
-        # Append to the queue
-        file_object_queue.append(file_obj)
+    if  upload_file_obj in file_object_queue:
 
-        return {"status": "success", "detail": f"File {file.filename} added to the require queue."}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error adding file to queue: {str(e)}")
+        # save file
+        try :
+            file_path = os.path.join(storage_path, uuid)
+
+            # Read the file content
+            content = await file.read()
+
+            # Write the content to a file
+            with open(file_path, "wb") as f:
+                f.write(content)
+        except OSError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+        file_object_queue.remove(upload_file_obj)
+
+        return {"status": "success", "detail": f"File {file.filename} remove from the require queue."}
+
+    else:
+        return HTTPException(status_code=400, detail=f"Upload file is not in required queue")
 
 
 @router.get("/{uuid}")
@@ -63,16 +82,18 @@ async def get_binary_from_queue(uuid: str, current_user: User = Depends(get_curr
     - Returns the file content as binary if found.
     """
     # Search for the file in the queue
-    file_obj = next((file for file in file_object_queue if file.uuid.to_string() == uuid), None)
 
-    if not file_obj:
+    exist_uuids = [
+        file for file in os.listdir(storage_path)
+    ]
+    if uuid not in exist_uuids:
+        file_object_queue.append(FileObject(uuid))
         raise HTTPException(status_code=404, detail="File not found in the queue.")
-
     try:
         # Assume file is stored locally (for demonstration purposes)
-        with open(file_obj.filename, "rb") as f:
+        with open(storage_path.joinpath(uuid), "rb") as f:
             binary_content = f.read()
-        return {"status": "success", "filename": file_obj.filename, "content": binary_content.hex()}
+        return {"status": "success", "filename": uuid, "content": binary_content.hex()}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="File not found on the server.")
     except Exception as e:

@@ -240,9 +240,7 @@ async def search_files_by_name(
 ):
     if not filename.strip():
         raise HTTPException(status_code=400, detail="Filename is required for searching.")
-
     db = DatabaseConnection.get_instance()
-
     query = """
         SELECT filename, doc_uuid, parent_uuid, CAST(d_id AS CHAR) AS d_id, doc_hash, timestamp, uploaded_by
         FROM doc
@@ -252,14 +250,12 @@ async def search_files_by_name(
         print(f"Executing query: {query} with filename: %{filename}% and user_id: {current_user.user_id}")
         
         result = db.execute_query(query, (f"{filename}%", current_user.user_id))
-
         if not result:
             print("No results found")
             raise HTTPException(
                 status_code=404,
                 detail="No files found for the given name and user.",
             )
-
         files = [
             DocInfoSchema(
                 filename=row["filename"],
@@ -271,7 +267,6 @@ async def search_files_by_name(
             )
             for row in result
         ]
-
         return files
     except Exception as e:
         print(f"Error occurred: {str(e)}")

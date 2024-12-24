@@ -123,7 +123,6 @@ if ($folder_contents) {
                 <div class="details-header">
                     <h3>檔案資訊</h3>
                     <!-- 搜尋功能 -->
-                     
                     <div class="search-bar-container">
                         <form class="search-bar" onsubmit="searchFiles(); return false;">
                             <input type="text" id="search-query" class="search-input" placeholder="搜尋檔案或資料夾"
@@ -157,9 +156,8 @@ if ($folder_contents) {
                 <label for="hash">Hash</label>
                 <p id="hash">N/A</p>
 
-                <label for="Tags">Tags</label>
-                <p id="Tags">N/A</p>
-
+                <label for="tags">Tags</label>
+                <ul id="tags-list"></ul>
             </div>
         </main>
     </div>
