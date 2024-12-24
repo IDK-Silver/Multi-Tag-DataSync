@@ -138,3 +138,4 @@ async def delete_tag_from_db(tag_info: DocTagSchema, current_user: User = Depend
     db.execute_update(query, (tag_info.uuid, tag_info.tag))
 
     return {"detail": f"Tag '{tag_info.tag}' deleted successfully from document '{tag_info.uuid}'"}
+
