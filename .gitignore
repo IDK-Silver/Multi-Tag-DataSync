@@ -410,5 +410,6 @@ TSWLatexianTemp*
 *.hd
 *.pdf
 old/
-*.pcy
 
+*.pcy
+__pycache__
