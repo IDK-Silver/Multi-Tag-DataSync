@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from app.core.security import get_current_user
@@ -7,10 +8,12 @@ from app.schemas.file.info import DocUUIDSchema, DocInfoSchema, UpdateDocInfoSch
 from app.modules.file_object.object import FileObject
 from app.core.db import DatabaseConnection
 import typing
+
 router = APIRouter()
 
 @router.post("/", response_model=DocInfoSchema)
 async def get_file_info(doc_info: DocUUIDSchema, current_user: User = Depends(get_current_user)):
+
     """
     Retrieve file information by its UUID.
     - If the UUID is empty or invalid, return a 404 error.
@@ -18,13 +21,18 @@ async def get_file_info(doc_info: DocUUIDSchema, current_user: User = Depends(ge
     - Otherwise, return the file's details in a structured format.
     """
     # Ensure the UUID is not empty
+
+    # check uuid is not empty
+
     if len(doc_info.uuid) == 0:
         raise HTTPException(
             status_code=404,
             detail="File uuid is required.",
         )
 
+
     # Fetch file information from the database
+
     file = FileObject.from_db(doc_info.uuid)
 
     if file is None:
@@ -34,6 +42,7 @@ async def get_file_info(doc_info: DocUUIDSchema, current_user: User = Depends(ge
         )
 
     # Validate the retrieved file object
+
     if not file.is_valid():
         raise HTTPException(
             status_code=404,
@@ -41,6 +50,7 @@ async def get_file_info(doc_info: DocUUIDSchema, current_user: User = Depends(ge
         )
 
     # Prepare and return the response
+
     info = DocInfoSchema(
         filename=file.filename,
         uuid=file.uuid.to_string(),
@@ -66,6 +76,7 @@ async def update_file_info(doc_info: UpdateDocInfoSchema, current_user: User = D
 
     if remote_doc is None:
         # Insert new file info into the database
+
         query = """
             INSERT INTO doc (filename, doc_uuid, parent_uuid, d_id, doc_hash, timestamp, uploaded_by)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -87,6 +98,7 @@ async def update_file_info(doc_info: UpdateDocInfoSchema, current_user: User = D
     else:
         db = DatabaseConnection.get_instance()
         # Update existing file info
+
         query = """
             UPDATE doc
             SET filename = %s, doc_uuid = %s, parent_uuid = %s, d_id = %s, doc_hash = %s, timestamp = %s, uploaded_by = %s
@@ -116,6 +128,7 @@ async def delete_file_info(doc_info: DocUUIDSchema, current_user: User = Depends
     - If the file is a root file, prevent deletion and return a 404 error.
     - Otherwise, delete the file successfully.
     """
+
     db = DatabaseConnection.get_instance()
     remote_doc = FileObject.from_db(doc_info.uuid)
 
@@ -126,11 +139,13 @@ async def delete_file_info(doc_info: DocUUIDSchema, current_user: User = Depends
         )
 
     # Prevent deletion of root files
+
     if remote_doc.is_root():
         return HTTPException(
             status_code=404,
             detail="Can't delete root file.",
         )
+
 
     # Execute deletion query
     db.execute_update(
@@ -142,6 +157,7 @@ async def delete_file_info(doc_info: DocUUIDSchema, current_user: User = Depends
         status_code=200,
         detail="File deleted Successfully.",
     )
+
 
 @router.post("/add_tags")
 async def add_tags(doc_info: DocUUIDSchema, tags: List[str], current_user: User = Depends(get_current_user)):
@@ -271,3 +287,4 @@ async def search_files_by_name(
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error executing search: {str(e)}")
+

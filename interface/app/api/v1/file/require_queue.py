@@ -98,3 +98,4 @@ async def get_binary_from_queue(uuid: str, current_user: User = Depends(get_curr
         raise HTTPException(status_code=404, detail="File not found on the server.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
+

@@ -31,3 +31,4 @@ async def check_file(uuid: str):
         if file not in file_object_queue:
             file_object_queue.append(file)
         raise HTTPException(status_code=404, detail="File not found and added to require queue")
+

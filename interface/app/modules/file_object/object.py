@@ -60,19 +60,18 @@ class FileObject:
 
     def __modify_by_dict__(self, dictionary):
         """用資料庫查詢結果字典更新對象的屬性"""
+
         self.filename = dictionary["filename"]
         self.uuid = FileObjectUUID(dictionary["doc_uuid"])
         self.parent_id = FileObjectUUID(dictionary["parent_uuid"])
         self.d_id = FileObjectType(dictionary["d_id"])
         self.timestamp: datetime = dictionary["timestamp"]
-        self.hash = dictionary["doc_hash"]
+        self.timestamp = dictionary["timestamp"]
 
     @staticmethod
     def from_dict(dictionary):
         """從字典生成 FileObject"""
-        ret: FileObject = FileObject()
-        ret.__modify_by_dict__(dictionary)
-        return ret
+
 
     @staticmethod
     def from_db(doc_id: Union[str, FileObjectUUID]):
@@ -81,6 +80,7 @@ class FileObject:
         :param doc_id: 檔案的 UUID
         :return: FileObject 或 None
         """
+
         ret = FileObject()
         db = DatabaseConnection.get_instance()
 
@@ -103,6 +103,7 @@ class FileObject:
     @staticmethod
     def get_children(parent_doc_id: FileObjectUUID) -> list:
         """獲取指定父目錄下的所有子對象"""
+
         db = DatabaseConnection.get_instance()
 
         children_info = db.execute_query(
@@ -120,6 +121,7 @@ class FileObject:
 
     def __str__(self):
         """返回對象的字串表示，用於打印"""
+
         ret = ''
 
         ret += 'filename : ' + self.filename              + '\t'
@@ -283,6 +285,7 @@ class FileObjectTree:
 file_object_queue: typing.List[FileObject] = [
     
 ]
+
 if __name__ == "__main__":
     doc = FileObject.from_db('00524c02-a740-11ef-95a9-0242ac150002')
     print(doc)
