@@ -349,3 +349,143 @@ Future<void> uploadFileToRequireQueue(
     print('Error sending file: $e');
   }
 }
+
+Future<List<String>?> getTagsByDocUuid(String token, String uuid) async {
+  // Create Dio instance
+  var dio = Dio();
+  (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    return client;
+  };
+
+  final String url = (await getHostUrl()) + 'api/v1/file/tag/$uuid';
+
+  // Perform the POST request
+  try {
+    final response = await dio.get(url.toString(),
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ));
+    if (response.statusCode == 200) {
+      final List<String> responseData = List<String>.from(response.data);
+      print("getTagsByDocUuid conent : $responseData");
+      return responseData;
+    } else {
+      print(
+          'getTagsByDocUuid : respnese not 200 ${response.data['status_code']}');
+      return null;
+    }
+  } catch (e) {
+    print('getTagsByDocUuid : failed to fetch file tags: $e');
+    return null;
+  }
+}
+
+Future<bool> addTagDB(String token, String uuid, String tag) async {
+  // Initialize Dio
+  var dio = Dio();
+
+  // Allow bad certificates (useful for development; remove in production)
+  (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    return client;
+  };
+
+  // Construct the API URL
+  final String url = (await getHostUrl()) + 'api/v1/file/tag/';
+
+  try {
+    // Prepare the request headers
+    final headers = {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    // Prepare the request body
+    final data = jsonEncode({
+      'uuid': uuid,
+      'tag': tag,
+    });
+
+    // Send the POST request
+    final response = await dio.post(
+      url,
+      options: Options(headers: headers),
+      data: data,
+    );
+
+    // Check the response status
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      // Assuming 200 or 201 indicates success
+      print('Tag added successfully.');
+      return true;
+    } else {
+      print(
+          'Failed to add tag. Status code: ${response.statusCode}, Response: ${response.data}');
+      return false;
+    }
+  } catch (e) {
+    print('Error adding tag: $e');
+    return false;
+  }
+}
+
+Future<bool> deleteTagDB(String token, String uuid, String tag) async {
+  // Initialize Dio
+  var dio = Dio();
+
+  // Allow bad certificates (useful for development; remove in production)
+  (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate =
+      (HttpClient client) {
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    return client;
+  };
+
+  // Construct the API URL
+  final String url = (await getHostUrl()) + 'api/v1/file/tag/';
+
+  try {
+    // Prepare the request headers
+    final headers = {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    // Prepare the request body
+    final data = jsonEncode({
+      'uuid': uuid,
+      'tag': tag,
+    });
+
+    // Send the DELETE request with a body
+    final response = await dio.delete(
+      url,
+      options: Options(headers: headers),
+      data: data,
+    );
+
+    // Check the response status
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      // Assuming 200 OK or 204 No Content indicates success
+      print('Tag deleted successfully.');
+      return true;
+    } else {
+      print(
+          'Failed to delete tag. Status code: ${response.statusCode}, Response: ${response.data}');
+      return false;
+    }
+  } catch (e) {
+    print('Error deleting tag: $e');
+    return false;
+  }
+}
