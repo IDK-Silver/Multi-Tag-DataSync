@@ -1,0 +1,274 @@
+/* Layout */
+body {
+    display: flex;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+}
+
+.details-panel {
+    width: 75%;
+    padding: 20px;
+    background-color: #fafafa;
+}
+
+.details-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input,
+p {
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+input[readonly] {
+    background-color: #e0e0e0;
+}
+
+.logout-button {
+    position: absolute;
+    /* 固定定位 */
+    bottom: 5px;
+    /* 距離底部 5px */
+    left: 20px;
+    /* 距離左側 20px */
+    padding: 10px 15px;
+    background-color: rgb(0, 0, 0);
+    /* 紅色背景 */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.logout-button:hover {
+    background-color: rgb(233, 182, 182);
+    /* 滑鼠懸停時的顏色 */
+}
+
+.loading {
+    font-style: italic;
+    color: gray;
+}
+/* 側邊目錄樣式 */
+.sidebar {
+    width: 250px;
+    background-color: #f9f9f9;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+}
+
+#file-tree {
+    list-style: none;
+    padding-left: 0;
+}
+
+#file-tree li {
+    margin: 5px 0;
+    padding-left: 20px;
+    position: relative;
+}
+
+/* 文件與資料夾圖示樣式 */
+.folder-icon,
+.file-icon {
+    vertical-align: middle;
+    margin-right: 8px;
+    color: #666;
+}
+
+.folder-icon {
+    color: #ff9800;
+}
+
+.file-icon {
+    color: #2196f3;
+}
+
+/* 子目錄縮進 */
+#file-tree ul {
+    padding-left: 20px;
+    margin: 5px 0 0 0;
+    border-left: 1px dashed #ccc;
+}
+
+#file-tree ul li::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10px;
+    width: 10px;
+    height: 100%;
+    border-left: 1px solid #ccc;
+}
+/* 右上角按鈕 */
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tag-section {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tag-section input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.tag-section button {
+    padding: 5px 10px;
+    margin-left: 5px;
+    background-color: #000000;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tag-section button:hover {
+    background-color: rgb(233, 182, 182);
+}
+
+#tags-container {
+    margin-top: 10px;
+}
+
+#tags-list {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0;
+}
+
+#tags-list li {
+    display: inline-block;
+    background-color: #f1f1f1;
+    color: #333;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+/* Tooltip 基本樣式 */
+.file-name {
+    position: relative;
+    cursor: pointer; /* 鼠標變成指針 */
+}
+
+.file-name::after {
+    content: attr(data-tooltip); /* 使用 data-tooltip 的值 */
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.file-name:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+.sidebar li span {
+    display: inline-block;     /* 讓 span 遵循寬度設置 */
+    max-width: 100%;           /* 最大寬度依據 sidebar 大小 */
+    overflow: hidden;          /* 隱藏溢出文字 */
+    text-overflow: ellipsis;   /* 顯示省略號 */
+    white-space: nowrap;       /* 禁止換行 */
+    cursor: pointer;           /* 鼠標顯示指針 */
+}
+
+/* 搜尋結果容器 */
+.search-results {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 200px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    margin-top: 5px;
+    list-style: none;
+    padding: 0;
+}
+
+/* 搜尋結果項目 */
+.search-results li {
+    padding: 10px 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s;
+}
+
+.search-results li:hover {
+    background-color: #f0f0f0;
+}
+
+/* 搜尋結果文字 */
+.search-results li span {
+    margin-left: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+/* 搜尋結果圖示 */
+.search-results li .material-icons {
+    font-size: 20px;
+    color: #666;
+}
+
+/* 標籤顯示 */
+#tags-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.tag-item {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.tag-item:hover {
+    background-color: #e0e0e0;
+    border-color: #aaa;
+    color: red; /* 提示刪除操作 */
+}
