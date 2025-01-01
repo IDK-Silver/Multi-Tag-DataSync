@@ -4,6 +4,9 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:mtds/modules/file_bin/info.dart';
 
+import 'package:path/path.dart' as Path;
+
+
 class BasicConfigController {
   // Private static instance
   static final BasicConfigController _instance =
@@ -28,10 +31,16 @@ class BasicConfigController {
 
   Future<Isar> _getIsarInstance() async {
     if (_isarInstance == null) {
-      final dir = await _dir;
+      final dir = Directory(
+          '${(await _dir).absolute.path.toString()}${Platform.pathSeparator}.mtds');
+
+      if (!(await dir.exists())) {
+        dir.create(recursive: true);
+      }
+
       _isarInstance = Isar.openSync(
         [BasicConfigSchema],
-        directory: dir.path,
+        directory: dir.absolute.path.toString(),
         name: "basic_config",
       );
     }

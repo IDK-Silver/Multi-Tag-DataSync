@@ -14,6 +14,7 @@ import 'package:mtds/modules/file_bin/controler.dart';
 import 'package:mtds/modules/file_bin/info.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mtds/modules/configs/controler.dart';
+import 'package:mtds/pages/file/widget/tags.dart';
 
 class FilePage extends StatefulWidget {
   const FilePage({super.key});
@@ -57,6 +58,8 @@ class _FilePageState extends State<FilePage> {
   String timestampString = '';
   String currentUuidString = '';
   String currentHashValue = '';
+  List<String> currentTags = <String>[];
+
   CurrentFilePageWidgetState currentWidgetState = CurrentFilePageWidgetState();
   TextEditingController uploadFilePathTextEditerControler =
       TextEditingController();
@@ -84,7 +87,7 @@ class _FilePageState extends State<FilePage> {
   }
 
   void _startPeriodicExecution() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (!_isExecuting) {
         _executeCheckFileRequiredQueue();
       } else {
@@ -138,35 +141,55 @@ class _FilePageState extends State<FilePage> {
   }
 
   Future<void> downloadFileFromAnother() async {
-    String token = await _getToken();
-    if (token.isEmpty) return;
-
-    final binaryData = await getBinaryFile(currentUuidString, token);
-
-    if (binaryData == null) {
-      print('bin is null');
-      return;
-    }
-
+    final downloadUuid = currentUuidString;
+    final downloadFilename = filenameTextEditerControler.text;
+    final triggerEntry = currentTreeEntry;
     // Get the directory to save the file
     final directory = await getApplicationDocumentsDirectory();
     final filePath = '${directory.path}/${filenameTextEditerControler.text}';
+    int tryCount = 0;
+    String token = await _getToken();
+    if (token.isEmpty) return;
+
+    var binaryData = await getBinaryFile(downloadUuid, token);
+
+    while (binaryData == null && tryCount <= 10) {
+      print('downloadFile try to download, current try count $tryCount');
+      await Future.delayed(const Duration(seconds: 5));
+      binaryData = await getBinaryFile(downloadUuid, token);
+      tryCount++;
+    }
+
+    if (binaryData == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("無法下載 $downloadFilename, 無任何其他 Device 提供檔案"),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      });
+      return;
+    }
+
 
     // Write the bytes to the file
     final file = File(filePath);
     await file.writeAsBytes(binaryData);
 
     final binInfo = FileBinaryInfo()
-      ..uuid = currentUuidString
+      ..uuid = downloadUuid
       ..path = filePath
       ..hash = await getFileChecksum(filePath);
     fileBinaryController.put(binInfo);
 
-    setState(() {
-      fileBinaryController.put(binInfo);
-      currentFileInLocal = true;
-      currentFileLocalPath = filePath;
-    });
+    if (currentTreeEntry == triggerEntry) {
+      setState(() {
+        fileBinaryController.put(binInfo);
+        currentFileInLocal = true;
+        currentFileLocalPath = filePath;
+      });
+    }
 
     print('finish download');
   }
@@ -428,6 +451,26 @@ class _FilePageState extends State<FilePage> {
     return;
   }
 
+
+  void _addTag(String tag) {
+    setState(() {
+      currentTags.add(tag);
+    });
+    _getToken().then((toekn) {
+      addTagDB(toekn, currentUuidString, tag);
+    });
+  }
+
+  void _deleteTag(String tag) {
+    setState(() {
+      currentTags.remove(tag);
+    });
+    _getToken().then((toekn) {
+      deleteTagDB(toekn, currentUuidString, tag);
+    });
+  }
+
+
   List<FileObjectNode> roots = <FileObjectNode>[];
 
   late final TreeController<FileObjectNode> treeController;
@@ -517,6 +560,20 @@ class _FilePageState extends State<FilePage> {
 
                             currentHashValue = entry.node.hash;
 
+                            // fetch tage by API
+                            _getToken().then((token) {
+                              currentTags.clear();
+
+                              getTagsByDocUuid(token, currentUuidString)
+                                  .then((list) {
+                                if (list != null) {
+                                  setState(() {
+                                    currentTags = list;
+                                  });
+                                }
+                              });
+                            });
+
                             fileBinaryController
                                 .read(currentUuidString)
                                 .then((binInfo) {
@@ -541,7 +598,8 @@ class _FilePageState extends State<FilePage> {
         Expanded(
             flex: 4,
             child: Container(
-              color: Color.fromARGB(119, 239, 234, 234),
+
+              color: const Color.fromARGB(119, 239, 234, 234),
               child: Stack(children: [
                 Column(
                   children: [
@@ -633,6 +691,21 @@ class _FilePageState extends State<FilePage> {
                         ],
                       ),
                     ),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(40, 0, 40, 20),
+                      child: Row(
+                        children: [
+                          const Expanded(flex: 1, child: Text('Tags ')),
+                          Expanded(
+                              flex: 3,
+                              child: TagDisplay(
+                                currentTags: currentTags,
+                                onTagAdded: _addTag,
+                                onTagDeleted: _deleteTag,
+                              ))
+                        ],
+                      ),
+                    )
                     // if (currentFileInLocal)
                     //   Container(
                     //     padding: const EdgeInsets.fromLTRB(40, 0, 40, 20),
@@ -771,8 +844,8 @@ class _FilePageState extends State<FilePage> {
                             Row(
                               children: [
                                 const Expanded(
-                                  child: Text('Folder Name : '),
                                   flex: 2,
+                                  child: Text('Folder Name : '),
                                 ),
                                 Expanded(
                                     flex: 8,
