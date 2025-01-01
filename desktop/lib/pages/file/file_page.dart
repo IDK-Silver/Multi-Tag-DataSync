@@ -59,6 +59,7 @@ class _FilePageState extends State<FilePage> {
   String currentUuidString = '';
   String currentHashValue = '';
   List<String> currentTags = <String>[];
+
   CurrentFilePageWidgetState currentWidgetState = CurrentFilePageWidgetState();
   TextEditingController uploadFilePathTextEditerControler =
       TextEditingController();
@@ -170,6 +171,7 @@ class _FilePageState extends State<FilePage> {
       });
       return;
     }
+
 
     // Write the bytes to the file
     final file = File(filePath);
@@ -449,6 +451,7 @@ class _FilePageState extends State<FilePage> {
     return;
   }
 
+
   void _addTag(String tag) {
     setState(() {
       currentTags.add(tag);
@@ -466,6 +469,7 @@ class _FilePageState extends State<FilePage> {
       deleteTagDB(toekn, currentUuidString, tag);
     });
   }
+
 
   List<FileObjectNode> roots = <FileObjectNode>[];
 
@@ -594,6 +598,7 @@ class _FilePageState extends State<FilePage> {
         Expanded(
             flex: 4,
             child: Container(
+
               color: const Color.fromARGB(119, 239, 234, 234),
               child: Stack(children: [
                 Column(
