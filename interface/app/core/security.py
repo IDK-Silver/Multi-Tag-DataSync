@@ -11,9 +11,9 @@ from app.schemas.auth import User
 from app.core.db import DatabaseConnection
 
 # 設定值
-SECRET_KEY = "your-secret-key"  # 請更換為安全的密鑰
+SECRET_KEY = "hina-kano-chino-kaguranana-sharo-dataScienceFromScratch"  # 請更換為安全的密鑰
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 720
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")

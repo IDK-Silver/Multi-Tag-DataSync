@@ -81,7 +81,7 @@ async def get_tag_by_doc_uuid(uuid: str  ,current_user: User = Depends(get_curre
         )
     # ensure file info is exists in database
     doc_info = FileObject.from_db(uuid)
-    if doc_info.uuid is None:
+    if doc_info is None:
         return HTTPException(
             status_code=404,
             detail="Not found document by uuid"

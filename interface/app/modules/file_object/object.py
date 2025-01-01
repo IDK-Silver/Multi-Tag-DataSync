@@ -60,7 +60,7 @@ class FileObject:
 
     def __modify_by_dict__(self, dictionary):
         """用資料庫查詢結果字典更新對象的屬性"""
-
+        self.hash = dictionary["doc_hash"]
         self.filename = dictionary["filename"]
         self.uuid = FileObjectUUID(dictionary["doc_uuid"])
         self.parent_id = FileObjectUUID(dictionary["parent_uuid"])
@@ -71,6 +71,10 @@ class FileObject:
     @staticmethod
     def from_dict(dictionary):
         """從字典生成 FileObject"""
+        ret: FileObject = FileObject()
+        ret.__modify_by_dict__(dictionary)
+        return ret
+
 
 
     @staticmethod

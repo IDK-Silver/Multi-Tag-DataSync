@@ -410,7 +410,6 @@ TSWLatexianTemp*
 *.hd
 *.pdf
 old/
-
 *.pcy
 __pycache__
 desktop/.dart_tool
