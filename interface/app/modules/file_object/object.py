@@ -76,6 +76,7 @@ class FileObject:
         return ret
 
 
+
     @staticmethod
     def from_db(doc_id: Union[str, FileObjectUUID]):
         """

@@ -411,4 +411,7 @@ TSWLatexianTemp*
 *.pdf
 old/
 *.pcy
+__pycache__
+desktop/.dart_tool
+.DS_Store
 
